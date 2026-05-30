@@ -1,0 +1,106 @@
+# Python
+
+**pycache**/
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.python-version
+
+# Virtual Environment
+
+venv/
+env/
+ENV/
+.venv/
+
+# Django stuff
+
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Media & Static (optional - depends on setup)
+
+media/
+staticfiles/
+
+# Environment variables
+
+.env
+.env.*
+
+# VS Code
+
+.vscode/
+
+# PyCharm
+
+.idea/
+
+# Mac
+
+.DS_Store
+
+# Windows
+
+Thumbs.db
+
+# Distribution / packaging
+
+build/
+dist/
+*.egg-info/
+
+# Migrations (optional - be careful)
+
+# apps/*/migrations/*
+
+# !apps/*/migrations/**init**.py
+
+# Cache
+
+*.cache
+*.pid
+*.seed
+
+# Coverage reports
+
+htmlcov/
+.coverage
+.coverage.*
+
+# Node (if using frontend)
+
+node_modules/
+
+# Logs
+
+logs/
+*.log
+
+# Celery
+
+celerybeat-schedule
+
+# pytest
+
+.pytest_cache/
+
+# mypy
+
+.mypy_cache/
+
+# Docker
+
+*.pid
+*.sock
+
+# IDE misc
+
+*.swp
+
+
+
+

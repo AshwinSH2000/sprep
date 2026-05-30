@@ -1,0 +1,140 @@
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils import timezone
+
+
+# Interval schedule (locked in PRD §2)
+# Index = current_stage value. Value = days after created_at when that review is due.
+STAGE_INTERVALS = {
+    1: 2,
+    2: 4,
+    3: 8,
+    4: 14,
+    5: 28,
+    6: 56,
+    7: 90,
+}
+
+# Human-readable label for each stage, used in templates
+STAGE_LABELS = {
+    1: 'Day 2',
+    2: 'Day 4',
+    3: 'Day 8',
+    4: 'Day 14',
+    5: 'Day 28',
+    6: 'Day 56',
+    7: 'Day 90',
+}
+
+
+class Entry(models.Model):
+    # ── Phase 2 placeholder ───────────────────────────────────────────────────
+    # Nullable in Phase 1 (no auth). In Phase 2: set null=False, provide default,
+    # generate migration. No other code change needed.
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='entries',
+    )
+
+    # ── Core fields ───────────────────────────────────────────────────────────
+    title = models.CharField(max_length=255)
+    body = models.TextField()
+
+    # stored as date (not datetime) — scheduling compares against today's date
+    created_at = models.DateField(default=timezone.localdate)
+
+    # ── Review state ──────────────────────────────────────────────────────────
+    # 0 = just created (not yet surfaced for review)
+    # 1–7 = awaiting review at the corresponding interval
+    # 8 = archived
+    current_stage = models.PositiveSmallIntegerField(default=0)
+
+    # True while the user has asked to be reminded again tomorrow.
+    # Cleared automatically when Done is clicked on the flagged card.
+    reminder_flag = models.BooleanField(default=False)
+
+    # Set when current_stage reaches 8. Null until then.
+    archived_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at', '-id']
+
+    def __str__(self):
+        return f'{self.title} (stage {self.current_stage})'
+
+    # ── Helpers ───────────────────────────────────────────────────────────────
+
+    def is_editable(self):
+        """Entry can only be edited on the day it was created (PRD §6)."""
+        return self.created_at == timezone.localdate()
+
+    def due_date(self):
+        """
+        Returns the calendar date this entry is next due for review.
+        Returns None if stage is 0 (not yet due) or 8 (archived).
+        """
+        if self.current_stage in STAGE_INTERVALS:
+            from datetime import timedelta
+            return self.created_at + timedelta(days=STAGE_INTERVALS[self.current_stage])
+        return None
+
+    def stage_label(self):
+        """Returns the human-readable label for the current stage, e.g. 'Day 14'."""
+        return STAGE_LABELS.get(self.current_stage, '')
+
+    def advance_stage(self):
+        """
+        Call this when the user clicks Done.
+        Increments current_stage. If it reaches 8, archives the entry.
+        Does NOT save — caller is responsible for .save().
+        """
+        self.current_stage += 1
+        if self.current_stage >= 8:
+            self.current_stage = 8
+            self.archived_at = timezone.now()
+        self.reminder_flag = False  # always clear flag on Done
+
+
+class ReviewLog(models.Model):
+    """
+    Immutable audit trail. One row written each time the user clicks Done.
+    Never edited or deleted — only appended.
+    """
+    entry = models.ForeignKey(
+        Entry,
+        on_delete=models.CASCADE,
+        related_name='review_logs',
+    )
+    # The stage the user was reviewing (before the increment)
+    stage_reviewed = models.PositiveSmallIntegerField()
+    reviewed_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['reviewed_at']
+
+    def __str__(self):
+        return f'Entry {self.entry_id} — stage {self.stage_reviewed} reviewed at {self.reviewed_at}'
+
+
+class Comment(models.Model):
+    """
+    User notes added while reviewing an entry.
+    Comments are append-only (no edit/delete in Phase 1).
+    """
+    entry = models.ForeignKey(
+        Entry,
+        on_delete=models.CASCADE,
+        related_name='comments',
+    )
+    # user FK can be added here in Phase 2 the same way as Entry.user
+    body = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'Comment on entry {self.entry_id} at {self.created_at}'

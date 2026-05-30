@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recall</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #f9f9f7;
+    }
+    .page { max-width: 680px; margin: 0 auto; padding: 40px 20px 200px; }
+
+    h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+    .sub { font-size: 13px; color: #888; margin-bottom: 36px; }
+
+    /* Entry cards */
+    .section-label {
+      font-size: 11px; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; color: #999;
+      margin-bottom: 10px; padding-bottom: 6px;
+      border-bottom: 1px solid #e8e8e6;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e8e8e6;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .card-title { font-weight: 500; font-size: 14px; }
+    .card-body-preview {
+      font-size: 13px; color: #666; margin-top: 4px;
+      white-space: pre-wrap;
+    }
+    .empty { font-size: 13px; color: #aaa; margin-bottom: 24px; }
+
+    /* Input area — fixed to bottom */
+    .input-area {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #fff;
+      border-top: 1px solid #e8e8e6;
+      padding: 16px 20px 20px;
+      z-index: 100;
+    }
+    .input-inner { max-width: 680px; margin: 0 auto; }
+    .input-area input[name="title"] {
+      width: 100%;
+      font-size: 15px; font-weight: 500;
+      border: none; outline: none;
+      margin-bottom: 8px;
+      background: transparent;
+    }
+    .input-area textarea {
+      width: 100%;
+      font-size: 14px;
+      border: 1px solid #e8e8e6;
+      border-radius: 8px;
+      padding: 10px 12px;
+      resize: vertical;
+      min-height: 80px;
+      font-family: inherit;
+      background: #f9f9f7;
+      outline: none;
+    }
+    .input-area textarea:focus { border-color: #bbb; }
+    .save-btn {
+      margin-top: 10px;
+      background: #1a1a1a; color: #fff;
+      border: none; border-radius: 8px;
+      padding: 9px 20px; font-size: 14px;
+      font-weight: 500; cursor: pointer;
+    }
+    .save-btn:hover { background: #333; }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <h1>Recall</h1>
+  <p class="sub">{{ today|date:"l, j F Y" }}</p>
+
+  <!-- Today's new entries (Phase 1 verification) -->
+  <div class="section-label">Written today</div>
+
+  {% if todays_entries %}
+    {% for entry in todays_entries %}
+      <div class="card">
+        <div class="card-title">{{ entry.title }}</div>
+        <div class="card-body-preview">{{ entry.body }}</div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="empty">No entries yet today. Write something below.</p>
+  {% endif %}
+
+  <!-- Review sections will be added here in Phase 2 -->
+
+</div>
+
+<!-- Fixed entry input area -->
+<div class="input-area">
+  <div class="input-inner">
+    <form method="post">
+      {% csrf_token %}
+      <input type="text" name="title" placeholder="Title" autocomplete="off" required>
+      <textarea name="body" placeholder="What do you want to remember?" required></textarea>
+      <button type="submit" class="save-btn">Save</button>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>
