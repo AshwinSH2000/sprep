@@ -97,6 +97,13 @@ class Entry(models.Model):
             self.archived_at = timezone.now()
         self.reminder_flag = False  # always clear flag on Done
 
+    def flag_for_reminder(self):
+        """
+        Call this when the user clicks 'Remind me tomorrow'.
+        Does NOT save — caller is responsible for .save().
+        """
+        self.reminder_flag = True
+
 
 class ReviewLog(models.Model):
     """

@@ -39,6 +39,23 @@
     }
     .empty { font-size: 13px; color: #aaa; margin-bottom: 24px; }
 
+    /* Collapsible review cards */
+    .card.collapsible .card-summary { cursor: pointer; }
+    .card-detail { display: none; margin-top: 10px; }
+    .card.expanded .card-detail { display: block; }
+    .card-actions {
+      display: flex; gap: 8px; margin-top: 12px;
+    }
+    .done-btn, .remind-btn {
+      border: none; border-radius: 8px;
+      padding: 7px 14px; font-size: 13px;
+      font-weight: 500; cursor: pointer;
+    }
+    .done-btn { background: #1a1a1a; color: #fff; }
+    .done-btn:hover { background: #333; }
+    .remind-btn { background: #f2f2f0; color: #444; }
+    .remind-btn:hover { background: #e8e8e6; }
+
     /* Input area — fixed to bottom */
     .input-area {
       position: fixed;
@@ -85,6 +102,31 @@
   <h1>Recall</h1>
   <p class="sub">{{ today|date:"l, j F Y" }}</p>
 
+  <!-- Day-labeled review sections (Phase 2) — hidden entirely when empty -->
+  {% for label, entries in review_sections.items %}
+    <div class="section-label">{{ label }}</div>
+    {% for entry in entries %}
+      <div class="card collapsible">
+        <div class="card-summary">
+          <div class="card-title">{{ entry.title }}</div>
+        </div>
+        <div class="card-detail">
+          <div class="card-body-preview">{{ entry.body }}</div>
+          <div class="card-actions">
+            <form method="post" action="{% url 'journal:mark_done' entry.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="done-btn">Done</button>
+            </form>
+            <form method="post" action="{% url 'journal:remind_tomorrow' entry.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="remind-btn">Remind me tomorrow</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
   <!-- Today's new entries (Phase 1 verification) -->
   <div class="section-label">Written today</div>
 
@@ -99,8 +141,6 @@
     <p class="empty">No entries yet today. Write something below.</p>
   {% endif %}
 
-  <!-- Review sections will be added here in Phase 2 -->
-
 </div>
 
 <!-- Fixed entry input area -->
@@ -114,6 +154,14 @@
     </form>
   </div>
 </div>
+
+<script>
+  document.querySelectorAll('.card.collapsible .card-summary').forEach(function (summary) {
+    summary.addEventListener('click', function () {
+      summary.closest('.card').classList.toggle('expanded');
+    });
+  });
+</script>
 
 </body>
 </html>
