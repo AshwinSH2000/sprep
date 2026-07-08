@@ -1,8 +1,10 @@
 from datetime import timedelta
 
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template.defaultfilters import date as date_filter
 from django.utils import timezone
-from .models import Entry, ReviewLog, STAGE_INTERVALS, STAGE_LABELS
+from .models import Entry, ReviewLog, Comment, STAGE_INTERVALS, STAGE_LABELS
 
 
 def home(request):
@@ -29,7 +31,7 @@ def home(request):
     todays_entries = Entry.objects.filter(created_at=today, current_stage=0)
 
     # Build day-labeled review sections, one query per stage.
-    # Flagged entries (reminder_flag=True) are handled separately in Phase 5.
+    # Flagged entries (reminder_flag=True) are excluded here — shown separately below.
     review_sections = {}
     for stage, interval in STAGE_INTERVALS.items():
         due_entries = Entry.objects.filter(
@@ -40,10 +42,15 @@ def home(request):
         if due_entries.exists():
             review_sections[STAGE_LABELS[stage]] = due_entries
 
+    # Entries snoozed via "Remind me tomorrow" (Phase 5). Shown until Done is
+    # clicked, regardless of due date — advance_stage() clears the flag.
+    flagged_entries = Entry.objects.filter(reminder_flag=True)
+
     return render(request, 'journal/home.html', {
         'todays_entries': todays_entries,
         'today': today,
         'review_sections': review_sections,
+        'flagged_entries': flagged_entries,
     })
 
 
@@ -65,4 +72,26 @@ def remind_tomorrow(request, pk):
         entry.flag_for_reminder()
         entry.save()
     return redirect('journal:home')
+
+
+# Shared with the `comment.created_at` rendering in home.html so AJAX-appended
+# comments look identical to server-rendered ones.
+COMMENT_DATE_FORMAT = 'j M, g:i A'
+
+
+def add_comment(request, pk):
+    """AJAX-only endpoint: create a Comment and return it as JSON."""
+    entry = get_object_or_404(Entry, pk=pk)
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method.'}, status=405)
+
+    body = request.POST.get('body', '').strip()
+    if not body:
+        return JsonResponse({'error': 'Comment cannot be empty.'}, status=400)
+
+    comment = Comment.objects.create(entry=entry, body=body)
+    return JsonResponse({
+        'body': comment.body,
+        'created_at': date_filter(comment.created_at, COMMENT_DATE_FORMAT),
+    })
 

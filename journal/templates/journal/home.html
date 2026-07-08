@@ -56,6 +56,32 @@
     .remind-btn { background: #f2f2f0; color: #444; }
     .remind-btn:hover { background: #e8e8e6; }
 
+    /* Comments (Phase 4) */
+    .comments { margin-top: 12px; }
+    .comment { padding: 8px 0; border-top: 1px solid #e8e8e6; }
+    .comment:first-child { border-top: none; }
+    .comment-body { font-size: 13px; color: #1a1a1a; white-space: pre-wrap; }
+    .comment-meta { font-size: 11px; color: #999; margin-top: 2px; }
+    .comment-form { display: flex; gap: 8px; margin-top: 12px; }
+    .comment-form input[name="body"] {
+      flex: 1;
+      font-size: 13px;
+      border: 1px solid #e8e8e6;
+      border-radius: 8px;
+      padding: 7px 10px;
+      outline: none;
+      background: #f9f9f7;
+    }
+    .comment-form input[name="body"]:focus { border-color: #bbb; }
+    .comment-submit-btn {
+      border: none; border-radius: 8px;
+      padding: 7px 14px; font-size: 13px;
+      font-weight: 500; cursor: pointer;
+      background: #f2f2f0; color: #444;
+    }
+    .comment-submit-btn:hover { background: #e8e8e6; }
+    .comment-error { font-size: 12px; color: #c0392b; margin-top: 6px; display: none; }
+
     /* Input area — fixed to bottom */
     .input-area {
       position: fixed;
@@ -102,28 +128,20 @@
   <h1>Recall</h1>
   <p class="sub">{{ today|date:"l, j F Y" }}</p>
 
+  <!-- Flagged for review (Phase 5) — entries the user snoozed via "Remind me
+       tomorrow", shown ahead of the day-labeled sections until Done is clicked -->
+  {% if flagged_entries %}
+    <div class="section-label">Flagged for review</div>
+    {% for entry in flagged_entries %}
+      {% include 'journal/_review_card.html' %}
+    {% endfor %}
+  {% endif %}
+
   <!-- Day-labeled review sections (Phase 2) — hidden entirely when empty -->
   {% for label, entries in review_sections.items %}
     <div class="section-label">{{ label }}</div>
     {% for entry in entries %}
-      <div class="card collapsible">
-        <div class="card-summary">
-          <div class="card-title">{{ entry.title }}</div>
-        </div>
-        <div class="card-detail">
-          <div class="card-body-preview">{{ entry.body }}</div>
-          <div class="card-actions">
-            <form method="post" action="{% url 'journal:mark_done' entry.pk %}">
-              {% csrf_token %}
-              <button type="submit" class="done-btn">Done</button>
-            </form>
-            <form method="post" action="{% url 'journal:remind_tomorrow' entry.pk %}">
-              {% csrf_token %}
-              <button type="submit" class="remind-btn">Remind me tomorrow</button>
-            </form>
-          </div>
-        </div>
-      </div>
+      {% include 'journal/_review_card.html' %}
     {% endfor %}
   {% endfor %}
 
@@ -159,6 +177,60 @@
   document.querySelectorAll('.card.collapsible .card-summary').forEach(function (summary) {
     summary.addEventListener('click', function () {
       summary.closest('.card').classList.toggle('expanded');
+    });
+  });
+
+  function getCookie(name) {
+    const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return match ? match.pop() : '';
+  }
+
+  document.querySelectorAll('.comment-form').forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const input = form.querySelector('input[name="body"]');
+      const errorEl = form.nextElementSibling;
+      const body = input.value.trim();
+      if (!body) return;
+
+      fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken'),
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: new URLSearchParams({ body: body }),
+      })
+        .then(function (response) {
+          if (!response.ok) throw new Error('Request failed');
+          return response.json();
+        })
+        .then(function (data) {
+          const commentsEl = form.closest('.card-detail').querySelector('.comments');
+          const commentDiv = document.createElement('div');
+          commentDiv.className = 'comment';
+
+          const bodyDiv = document.createElement('div');
+          bodyDiv.className = 'comment-body';
+          bodyDiv.textContent = data.body;
+
+          const metaDiv = document.createElement('div');
+          metaDiv.className = 'comment-meta';
+          metaDiv.textContent = data.created_at;
+
+          commentDiv.appendChild(bodyDiv);
+          commentDiv.appendChild(metaDiv);
+          commentsEl.appendChild(commentDiv);
+
+          input.value = '';
+          errorEl.textContent = '';
+          errorEl.style.display = 'none';
+        })
+        .catch(function () {
+          errorEl.textContent = 'Could not add comment. Please try again.';
+          errorEl.style.display = 'block';
+        });
     });
   });
 </script>

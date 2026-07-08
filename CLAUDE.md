@@ -42,6 +42,7 @@ journal/              ← main app (all domain logic lives here)
   templates/
     journal/          ← all HTML templates go here
       home.html
+      _review_card.html  ← shared collapsible card partial (day-labeled + flagged sections)
 manage.py
 CLAUDE.md             ← this file
 ```
@@ -106,8 +107,8 @@ from a later phase while working on an earlier one.
 - **Phase 1** ✅ Done — Project setup, models, admin, create-entry form
 - **Phase 2** ✅ Done — Scheduling query + day-labeled review sections on home page
 - **Phase 3** ✅ Done — Card expand/collapse, Done button, Remind me tomorrow
-- **Phase 4** — Comments (AJAX submit, chronological display)
-- **Phase 5** — Flagged for review section (reminder_flag=True entries)
+- **Phase 4** ✅ Done — Comments (AJAX submit, chronological display)
+- **Phase 5** ✅ Done — Flagged for review section (reminder_flag=True entries)
 - **Phase 6** — Archive page (/archive — stage 8 entries, read-only)
 - **Phase 7** — Django auth + multi-user (scope all queries to request.user)
 - **Phase 8** — Deployment (Railway/Render, whitenoise, env vars)
@@ -311,3 +312,28 @@ Admin is at `http://localhost:8000/admin/` — create a superuser with
   see the JavaScript section above for why comments are the exception.
 - This card structure only exists in the day-labeled review sections; the
   "Written today" (stage 0) cards are still static, no expand/collapse or actions.
+
+---
+
+## What Phase 4 & 5 delivered (already done — do not redo)
+
+Phases 1–5 are complete. Conventions a fresh session needs before starting Phase 6:
+
+- **Partial pattern**: shared per-card markup lives in
+  `journal/templates/journal/_review_card.html` (underscore prefix = partial,
+  not a routable page), `{% include %}`-ed from every section that renders a
+  collapsible entry card (flagged section, day-labeled sections). Extend this
+  partial for new per-card content instead of duplicating markup inline.
+- **fetch vs form-POST**: comments are the *only* fetch/AJAX case, specifically
+  so adding a note doesn't collapse the card the user is looking at. Every
+  other mutation — Done, Remind me tomorrow, and anything added later — is a
+  plain `<form method="post">` with redirect-after-POST. `add_comment` is the
+  one view that returns `JsonResponse` instead of `redirect()`; that exception
+  does not extend to other views.
+- **Comment timestamp formatting**: `COMMENT_DATE_FORMAT` in `views.py` and the
+  `|date:"..."` filter in `_review_card.html` must be kept in sync — one
+  formats AJAX-appended comments, the other formats server-rendered ones.
+- **Flagged entries**: a separate query with no date filtering
+  (`Entry.objects.filter(reminder_flag=True)`), rendered above the
+  day-labeled sections. Only cleared by `advance_stage()` (i.e. Done) — the
+  schedule itself never clears it.
