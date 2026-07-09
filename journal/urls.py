@@ -7,10 +7,11 @@ urlpatterns = [
     # Main page — entry input + review sections
     path('', views.home, name='home'),
 
-    # Stub routes for Phase 2 onwards — not wired yet, just named for future use
+    path('entry/<int:pk>/done/', views.mark_done, name='mark_done'),
+    path('entry/<int:pk>/remind/', views.remind_tomorrow, name='remind_tomorrow'),
+    path('entry/<int:pk>/comment/', views.add_comment, name='add_comment'),
+
+    # Stub routes for Phase 5 onwards — not wired yet, just named for future use
     # path('archive/', views.archive, name='archive'),
-    # path('entry/<int:pk>/done/', views.mark_done, name='mark_done'),
-    # path('entry/<int:pk>/remind/', views.remind_tomorrow, name='remind_tomorrow'),
-    # path('entry/<int:pk>/comment/', views.add_comment, name='add_comment'),
     # path('entry/<int:pk>/edit/', views.edit_entry, name='edit_entry'),
 ]
