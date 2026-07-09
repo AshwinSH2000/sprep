@@ -1,0 +1,201 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Dark blue theme — background darkest, text lightest, everything else blue-hued */
+  --bg: #0e1b2e;
+  --bg-card: #17293f;
+  --bg-input: #1c3049;
+  --text: #e9eef7;
+  --text-secondary: #9db0cc;
+  --text-muted: #71859f;
+  --border: #2a3c58;
+  --accent: #4f8ff7;
+  --accent-hover: #6ea3f9;
+  --accent-text: #ffffff;
+  --btn-secondary-bg: #24374f;
+  --btn-secondary-text: #cdd8ea;
+  --btn-secondary-hover: #2e4262;
+  --error: #ff7a7a;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+}
+::placeholder { color: var(--text-muted); opacity: 1; }
+
+.page { max-width: 680px; margin: 0 auto; padding: 40px 20px 200px; }
+
+h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+.sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 36px; }
+
+.nav-link { font-size: 13px; margin-bottom: 24px; }
+.nav-link a { color: var(--text-secondary); text-decoration: none; }
+.nav-link a:hover { text-decoration: underline; }
+
+/* Entry cards */
+.section-label {
+  font-size: 11px; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 10px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.card-title { font-weight: 500; font-size: 14px; }
+.card-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.card-body-preview {
+  font-size: 13px; color: var(--text-secondary); margin-top: 4px;
+  white-space: pre-wrap;
+}
+.empty { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+
+/* Collapsible review cards */
+.card.collapsible .card-summary { cursor: pointer; }
+.card-detail { display: none; margin-top: 10px; }
+.card.expanded .card-detail { display: block; }
+.card-actions {
+  display: flex; gap: 8px; margin-top: 12px;
+}
+.done-btn, .remind-btn {
+  border: none; border-radius: 8px;
+  padding: 7px 14px; font-size: 13px;
+  font-weight: 500; cursor: pointer;
+}
+.done-btn { background: var(--accent); color: var(--accent-text); }
+.done-btn:hover { background: var(--accent-hover); }
+.remind-btn { background: var(--btn-secondary-bg); color: var(--btn-secondary-text); }
+.remind-btn:hover { background: var(--btn-secondary-hover); }
+
+/* Comments (Phase 4) */
+.comments { margin-top: 12px; }
+.comment { padding: 8px 0; border-top: 1px solid var(--border); }
+.comment:first-child { border-top: none; }
+.comment-body { font-size: 13px; color: var(--text); white-space: pre-wrap; }
+.comment-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.comment-form { display: flex; gap: 8px; margin-top: 12px; }
+.comment-form input[name="body"] {
+  flex: 1;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 10px;
+  outline: none;
+  background: var(--bg-card);
+  color: var(--text);
+}
+.comment-form input[name="body"]:focus { border-color: var(--accent); }
+.comment-submit-btn {
+  border: none; border-radius: 8px;
+  padding: 7px 14px; font-size: 13px;
+  font-weight: 500; cursor: pointer;
+  background: var(--btn-secondary-bg); color: var(--btn-secondary-text);
+}
+.comment-submit-btn:hover { background: var(--btn-secondary-hover); }
+.comment-error { font-size: 12px; color: var(--error); margin-top: 6px; display: none; }
+
+/* Input area — fixed to bottom, collapsible (Phase 6+) */
+.input-area {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--bg-input);
+  border-top: 1px solid var(--border);
+  padding: 0 20px;
+  z-index: 100;
+}
+.input-toggle {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%;
+  border: none; background: transparent;
+  padding: 8px 0 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.input-toggle:hover { color: var(--text-secondary); }
+.chevron-icon { transition: transform 0.25s ease; }
+.input-area.collapsed .chevron-icon { transform: rotate(180deg); }
+
+.input-content {
+  max-height: 320px;
+  overflow: hidden;
+  opacity: 1;
+  transition: max-height 0.25s ease, opacity 0.2s ease;
+}
+.input-area.collapsed .input-content {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.input-inner { max-width: 680px; margin: 0 auto; padding-bottom: 20px; }
+.input-area input[name="title"] {
+  width: 100%;
+  font-size: 15px; font-weight: 500;
+  border: none; outline: none;
+  margin-bottom: 8px;
+  background: transparent;
+  color: var(--text);
+}
+.input-area textarea {
+  width: 100%;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  background: var(--bg-card);
+  color: var(--text);
+  outline: none;
+}
+.input-area textarea:focus { border-color: var(--accent); }
+.save-btn {
+  margin-top: 10px;
+  background: var(--accent); color: var(--accent-text);
+  border: none; border-radius: 8px;
+  padding: 9px 20px; font-size: 14px;
+  font-weight: 500; cursor: pointer;
+}
+.save-btn:hover { background: var(--accent-hover); }
+
+/* Login form (Phase 7) */
+.login-form { margin-top: 20px; max-width: 320px; }
+.login-form label {
+  display: block; font-size: 13px; color: var(--text-secondary);
+  margin-top: 14px; margin-bottom: 4px;
+}
+.login-form input {
+  width: 100%;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  background: var(--bg-card);
+  color: var(--text);
+  outline: none;
+}
+.login-form input:focus { border-color: var(--accent); }
+.login-form .save-btn { margin-top: 20px; }
+
+/* Account bar (Phase 7) */
+.account-bar {
+  font-size: 13px; color: var(--text-muted);
+  margin-bottom: 24px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.account-bar a { color: var(--text-secondary); text-decoration: none; }
+.account-bar a:hover { text-decoration: underline; }
+.account-bar form { display: inline; }
+.account-bar button.link-btn {
+  background: none; border: none; padding: 0;
+  font: inherit; color: var(--text-secondary); cursor: pointer;
+}
+.account-bar button.link-btn:hover { text-decoration: underline; }

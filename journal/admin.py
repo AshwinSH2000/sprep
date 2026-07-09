@@ -14,14 +14,14 @@ class CommentInline(admin.TabularInline):
     """Show comments directly inside an Entry's admin page."""
     model = Comment
     extra = 0
-    readonly_fields = ('body', 'created_at')
+    readonly_fields = ('user', 'body', 'created_at')
     can_delete = False
 
 
 @admin.register(Entry)
 class EntryAdmin(admin.ModelAdmin):
-    list_display = ('title', 'created_at', 'current_stage', 'reminder_flag', 'archived_at')
-    list_filter = ('current_stage', 'reminder_flag')
+    list_display = ('title', 'user', 'created_at', 'current_stage', 'reminder_flag', 'archived_at')
+    list_filter = ('current_stage', 'reminder_flag', 'user')
     search_fields = ('title', 'body')
     readonly_fields = ('archived_at',)
     inlines = [ReviewLogInline, CommentInline]
@@ -35,5 +35,5 @@ class ReviewLogAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('entry', 'created_at', 'body')
-    readonly_fields = ('entry', 'created_at')
+    list_display = ('entry', 'user', 'created_at', 'body')
+    readonly_fields = ('entry', 'user', 'created_at')

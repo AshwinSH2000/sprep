@@ -28,14 +28,9 @@ STAGE_LABELS = {
 
 
 class Entry(models.Model):
-    # ── Phase 2 placeholder ───────────────────────────────────────────────────
-    # Nullable in Phase 1 (no auth). In Phase 2: set null=False, provide default,
-    # generate migration. No other code change needed.
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
         related_name='entries',
     )
 
@@ -136,7 +131,11 @@ class Comment(models.Model):
         on_delete=models.CASCADE,
         related_name='comments',
     )
-    # user FK can be added here in Phase 2 the same way as Entry.user
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments',
+    )
     body = models.TextField()
     created_at = models.DateTimeField(default=timezone.now)
 

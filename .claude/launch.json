@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "django",
+      "runtimeExecutable": "/Users/ashwinsh/Documents/sprep/venv/bin/python",
+      "runtimeArgs": ["/Users/ashwinsh/Documents/sprep/manage.py", "runserver", "0.0.0.0:8000"],
+      "port": 8000
+    }
+  ]
+}

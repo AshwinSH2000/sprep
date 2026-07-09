@@ -1,0 +1,46 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Recall{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'journal/style.css' %}">
+</head>
+<body>
+
+<div class="page">
+  {% if user.is_authenticated %}
+    <div class="account-bar">
+      <span>{{ user.username }}</span>
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="link-btn">Log out</button>
+      </form>
+    </div>
+  {% endif %}
+  {% block content %}{% endblock %}
+</div>
+
+{% block extra_body %}{% endblock %}
+
+<script>
+  document.querySelectorAll('.card.collapsible .card-summary').forEach(function (summary) {
+    summary.addEventListener('click', function () {
+      summary.closest('.card').classList.toggle('expanded');
+    });
+  });
+
+  var inputToggle = document.querySelector('.input-toggle');
+  if (inputToggle) {
+    inputToggle.addEventListener('click', function () {
+      var inputArea = inputToggle.closest('.input-area');
+      var collapsed = inputArea.classList.toggle('collapsed');
+      inputToggle.setAttribute('aria-expanded', String(!collapsed));
+    });
+  }
+</script>
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>
