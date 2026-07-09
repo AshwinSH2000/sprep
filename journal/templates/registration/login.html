@@ -1,0 +1,21 @@
+{% extends 'journal/base.html' %}
+
+{% block title %}Recall — Log in{% endblock %}
+
+{% block content %}
+  <h1>Recall</h1>
+  <p class="sub">Log in to continue</p>
+
+  <form method="post" class="login-form">
+    {% csrf_token %}
+    {% if form.errors %}
+      <p class="comment-error" style="display: block;">Incorrect username or password.</p>
+    {% endif %}
+    <label for="id_username">Username</label>
+    {{ form.username }}
+    <label for="id_password">Password</label>
+    {{ form.password }}
+    <button type="submit" class="save-btn">Log in</button>
+    <input type="hidden" name="next" value="{{ next }}">
+  </form>
+{% endblock %}

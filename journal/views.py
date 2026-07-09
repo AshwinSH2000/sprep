@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.defaultfilters import date as date_filter
@@ -7,6 +8,7 @@ from django.utils import timezone
 from .models import Entry, ReviewLog, Comment, STAGE_INTERVALS, STAGE_LABELS
 
 
+@login_required
 def home(request):
     """
     - POST: save a new entry (title + body), redirect back.
@@ -22,19 +24,20 @@ def home(request):
                 title=title,
                 body=body,
                 current_stage=0,   # starts at 0 — not yet due for review
-                # Phase 2: user=request.user
+                user=request.user,
             )
         return redirect('journal:home')
 
     # Show entries created today so the user can verify saves are working
     today = timezone.localdate()
-    todays_entries = Entry.objects.filter(created_at=today, current_stage=0)
+    todays_entries = Entry.objects.filter(user=request.user, created_at=today, current_stage=0)
 
     # Build day-labeled review sections, one query per stage.
     # Flagged entries (reminder_flag=True) are excluded here — shown separately below.
     review_sections = {}
     for stage, interval in STAGE_INTERVALS.items():
         due_entries = Entry.objects.filter(
+            user=request.user,
             current_stage=stage,
             reminder_flag=False,
             created_at__lte=today - timedelta(days=interval),
@@ -44,7 +47,7 @@ def home(request):
 
     # Entries snoozed via "Remind me tomorrow" (Phase 5). Shown until Done is
     # clicked, regardless of due date — advance_stage() clears the flag.
-    flagged_entries = Entry.objects.filter(reminder_flag=True)
+    flagged_entries = Entry.objects.filter(user=request.user, reminder_flag=True)
 
     return render(request, 'journal/home.html', {
         'todays_entries': todays_entries,
@@ -54,8 +57,19 @@ def home(request):
     })
 
 
+@login_required
+def archive(request):
+    """Read-only list of archived (stage 8) entries, most recently archived first."""
+    archived_entries = Entry.objects.filter(user=request.user, current_stage=8).order_by('-archived_at')
+    return render(request, 'journal/archive.html', {
+        'archived_entries': archived_entries,
+        'read_only': True,
+    })
+
+
+@login_required
 def mark_done(request, pk):
-    entry = get_object_or_404(Entry, pk=pk)
+    entry = get_object_or_404(Entry, pk=pk, user=request.user)
     if request.method == 'POST':
         ReviewLog.objects.create(
             entry=entry,
@@ -66,8 +80,9 @@ def mark_done(request, pk):
     return redirect('journal:home')
 
 
+@login_required
 def remind_tomorrow(request, pk):
-    entry = get_object_or_404(Entry, pk=pk)
+    entry = get_object_or_404(Entry, pk=pk, user=request.user)
     if request.method == 'POST':
         entry.flag_for_reminder()
         entry.save()
@@ -79,9 +94,10 @@ def remind_tomorrow(request, pk):
 COMMENT_DATE_FORMAT = 'j M, g:i A'
 
 
+@login_required
 def add_comment(request, pk):
     """AJAX-only endpoint: create a Comment and return it as JSON."""
-    entry = get_object_or_404(Entry, pk=pk)
+    entry = get_object_or_404(Entry, pk=pk, user=request.user)
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
@@ -89,7 +105,7 @@ def add_comment(request, pk):
     if not body:
         return JsonResponse({'error': 'Comment cannot be empty.'}, status=400)
 
-    comment = Comment.objects.create(entry=entry, body=body)
+    comment = Comment.objects.create(entry=entry, user=request.user, body=body)
     return JsonResponse({
         'body': comment.body,
         'created_at': date_filter(comment.created_at, COMMENT_DATE_FORMAT),

@@ -93,4 +93,10 @@ USE_TZ = True              # all datetimes stored as UTC, converted on display
 # ── Static files ──────────────────────────────────────────────────────────────
 STATIC_URL = 'static/'
 
+
+# ── Auth (Phase 7) ──────────────────────────────────────────────────────────────
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'journal:home'
+LOGOUT_REDIRECT_URL = 'login'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

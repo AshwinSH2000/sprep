@@ -1,132 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Recall</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 15px;
-      line-height: 1.6;
-      color: #1a1a1a;
-      background: #f9f9f7;
-    }
-    .page { max-width: 680px; margin: 0 auto; padding: 40px 20px 200px; }
+{% extends 'journal/base.html' %}
 
-    h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
-    .sub { font-size: 13px; color: #888; margin-bottom: 36px; }
+{% block title %}Recall{% endblock %}
 
-    /* Entry cards */
-    .section-label {
-      font-size: 11px; font-weight: 600; letter-spacing: .08em;
-      text-transform: uppercase; color: #999;
-      margin-bottom: 10px; padding-bottom: 6px;
-      border-bottom: 1px solid #e8e8e6;
-    }
-    .card {
-      background: #fff;
-      border: 1px solid #e8e8e6;
-      border-radius: 10px;
-      padding: 14px 16px;
-      margin-bottom: 10px;
-    }
-    .card-title { font-weight: 500; font-size: 14px; }
-    .card-body-preview {
-      font-size: 13px; color: #666; margin-top: 4px;
-      white-space: pre-wrap;
-    }
-    .empty { font-size: 13px; color: #aaa; margin-bottom: 24px; }
-
-    /* Collapsible review cards */
-    .card.collapsible .card-summary { cursor: pointer; }
-    .card-detail { display: none; margin-top: 10px; }
-    .card.expanded .card-detail { display: block; }
-    .card-actions {
-      display: flex; gap: 8px; margin-top: 12px;
-    }
-    .done-btn, .remind-btn {
-      border: none; border-radius: 8px;
-      padding: 7px 14px; font-size: 13px;
-      font-weight: 500; cursor: pointer;
-    }
-    .done-btn { background: #1a1a1a; color: #fff; }
-    .done-btn:hover { background: #333; }
-    .remind-btn { background: #f2f2f0; color: #444; }
-    .remind-btn:hover { background: #e8e8e6; }
-
-    /* Comments (Phase 4) */
-    .comments { margin-top: 12px; }
-    .comment { padding: 8px 0; border-top: 1px solid #e8e8e6; }
-    .comment:first-child { border-top: none; }
-    .comment-body { font-size: 13px; color: #1a1a1a; white-space: pre-wrap; }
-    .comment-meta { font-size: 11px; color: #999; margin-top: 2px; }
-    .comment-form { display: flex; gap: 8px; margin-top: 12px; }
-    .comment-form input[name="body"] {
-      flex: 1;
-      font-size: 13px;
-      border: 1px solid #e8e8e6;
-      border-radius: 8px;
-      padding: 7px 10px;
-      outline: none;
-      background: #f9f9f7;
-    }
-    .comment-form input[name="body"]:focus { border-color: #bbb; }
-    .comment-submit-btn {
-      border: none; border-radius: 8px;
-      padding: 7px 14px; font-size: 13px;
-      font-weight: 500; cursor: pointer;
-      background: #f2f2f0; color: #444;
-    }
-    .comment-submit-btn:hover { background: #e8e8e6; }
-    .comment-error { font-size: 12px; color: #c0392b; margin-top: 6px; display: none; }
-
-    /* Input area — fixed to bottom */
-    .input-area {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: #fff;
-      border-top: 1px solid #e8e8e6;
-      padding: 16px 20px 20px;
-      z-index: 100;
-    }
-    .input-inner { max-width: 680px; margin: 0 auto; }
-    .input-area input[name="title"] {
-      width: 100%;
-      font-size: 15px; font-weight: 500;
-      border: none; outline: none;
-      margin-bottom: 8px;
-      background: transparent;
-    }
-    .input-area textarea {
-      width: 100%;
-      font-size: 14px;
-      border: 1px solid #e8e8e6;
-      border-radius: 8px;
-      padding: 10px 12px;
-      resize: vertical;
-      min-height: 80px;
-      font-family: inherit;
-      background: #f9f9f7;
-      outline: none;
-    }
-    .input-area textarea:focus { border-color: #bbb; }
-    .save-btn {
-      margin-top: 10px;
-      background: #1a1a1a; color: #fff;
-      border: none; border-radius: 8px;
-      padding: 9px 20px; font-size: 14px;
-      font-weight: 500; cursor: pointer;
-    }
-    .save-btn:hover { background: #333; }
-  </style>
-</head>
-<body>
-
-<div class="page">
+{% block content %}
   <h1>Recall</h1>
   <p class="sub">{{ today|date:"l, j F Y" }}</p>
+  <p class="nav-link"><a href="{% url 'journal:archive' %}">View archive →</a></p>
 
   <!-- Flagged for review (Phase 5) — entries the user snoozed via "Remind me
        tomorrow", shown ahead of the day-labeled sections until Done is clicked -->
@@ -158,28 +37,31 @@
   {% else %}
     <p class="empty">No entries yet today. Write something below.</p>
   {% endif %}
+{% endblock %}
 
-</div>
-
-<!-- Fixed entry input area -->
-<div class="input-area">
-  <div class="input-inner">
-    <form method="post">
-      {% csrf_token %}
-      <input type="text" name="title" placeholder="Title" autocomplete="off" required>
-      <textarea name="body" placeholder="What do you want to remember?" required></textarea>
-      <button type="submit" class="save-btn">Save</button>
-    </form>
+{% block extra_body %}
+  <!-- Fixed entry input area (collapsible) -->
+  <div class="input-area">
+    <button type="button" class="input-toggle" aria-expanded="true" aria-controls="input-content">
+      <svg class="chevron-icon" width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 12l5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="input-content" id="input-content">
+      <div class="input-inner">
+        <form method="post">
+          {% csrf_token %}
+          <input type="text" name="title" placeholder="Title" autocomplete="off" required>
+          <textarea name="body" placeholder="What do you want to remember?" required></textarea>
+          <button type="submit" class="save-btn">Save</button>
+        </form>
+      </div>
+    </div>
   </div>
-</div>
+{% endblock %}
 
+{% block scripts %}
 <script>
-  document.querySelectorAll('.card.collapsible .card-summary').forEach(function (summary) {
-    summary.addEventListener('click', function () {
-      summary.closest('.card').classList.toggle('expanded');
-    });
-  });
-
   function getCookie(name) {
     const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
     return match ? match.pop() : '';
@@ -234,6 +116,4 @@
     });
   });
 </script>
-
-</body>
-</html>
+{% endblock %}

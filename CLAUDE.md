@@ -39,10 +39,16 @@ journal/              ← main app (all domain logic lives here)
   views.py
   admin.py
   urls.py
+  static/
+    journal/style.css ← shared stylesheet, linked from base.html
   templates/
     journal/          ← all HTML templates go here
+      base.html       ← shared layout (account bar, card-toggle JS), all pages extend this
       home.html
+      archive.html
       _review_card.html  ← shared collapsible card partial (day-labeled + flagged sections)
+    registration/
+      login.html      ← Django auth login form (Phase 7)
 manage.py
 CLAUDE.md             ← this file
 ```
@@ -54,7 +60,7 @@ CLAUDE.md             ← this file
 ### Entry
 ```
 id               BigAutoField (PK)
-user             FK → User (nullable in Phase 1, required in Phase 2)
+user             FK → User (nullable in Phase 1, required as of Phase 7)
 title            CharField(max_length=255)
 body             TextField
 created_at       DateField (date only — not datetime)
@@ -109,8 +115,8 @@ from a later phase while working on an earlier one.
 - **Phase 3** ✅ Done — Card expand/collapse, Done button, Remind me tomorrow
 - **Phase 4** ✅ Done — Comments (AJAX submit, chronological display)
 - **Phase 5** ✅ Done — Flagged for review section (reminder_flag=True entries)
-- **Phase 6** — Archive page (/archive — stage 8 entries, read-only)
-- **Phase 7** — Django auth + multi-user (scope all queries to request.user)
+- **Phase 6** ✅ Done — Archive page (/archive — stage 8 entries, read-only)
+- **Phase 7** ✅ Done — Django auth + multi-user (scope all queries to request.user)
 - **Phase 8** — Deployment (Railway/Render, whitenoise, env vars)
 
 ---
@@ -142,10 +148,11 @@ from a later phase while working on an earlier one.
 - **Use `get_object_or_404`** in any view that fetches an Entry by PK from the URL.
   Never use `.get(pk=...)` in views — it raises an unhandled exception on missing rows.
 
-- **Phase 2 auth pattern** — all Entry queries will gain `.filter(user=request.user)`.
-  To make this easy: write queries in views so the user filter can be appended in
-  one place. Do not scatter Entry.objects.filter() calls across helper functions
-  that would all need updating.
+- **Auth scoping (Phase 7, done)** — every Entry query is filtered with
+  `.filter(user=request.user)`, and every pk-based lookup uses
+  `get_object_or_404(Entry, pk=pk, user=request.user)`. Any new view that
+  touches Entry or Comment must follow this pattern — never query without
+  scoping to `request.user`.
 
 ### URL routing
 
@@ -188,17 +195,21 @@ only render a section if its list is non-empty.
 - All templates go in `journal/templates/journal/`.
 - Use `{% url 'journal:name' %}` everywhere — never hardcode paths.
 - Use `{% csrf_token %}` in every `<form>` tag.
-- The fixed-bottom input area (title + body + Save) is always visible on the
-  home page. Scrollable review sections sit above it.
+- The fixed-bottom input area (title + body + Save) sits on the home page,
+  with a chevron toggle to collapse/expand it (see JavaScript section below).
+  Scrollable review sections sit above it.
 - Empty review sections must be hidden entirely — no "nothing here" placeholders.
 - `{% if entry.is_editable %}` gates the edit button — never check the date in templates.
 
 ### JavaScript
 
 - Vanilla JS only. No jQuery, no Alpine, no HTMX.
-- JS is used for two things only:
+- JS is used for three things only, all wired up in `base.html`'s shared `<script>` block:
   1. Expand/collapse card click behaviour
-  2. Async comment submission (fetch POST to a comment endpoint)
+  2. Collapsing/expanding the fixed bottom input area via its chevron
+     (`.input-toggle` toggles `.collapsed` on `.input-area`; CSS handles the
+     `max-height`/opacity transition and chevron rotation — see CSS section)
+  3. Async comment submission (fetch POST to a comment endpoint)
 - **Comments are the only fetch/AJAX case.** Every other state change (Save entry,
   Done, Remind me tomorrow) is a plain `<form method="post">` that does a full
   page redirect, per the redirect-after-POST rule. Do not convert those to fetch
@@ -213,16 +224,26 @@ only render a section if its list is non-empty.
 ### CSS
 
 - Plain CSS, no framework.
-- CSS lives in `<style>` blocks inside templates for now (Phase 1/2).
-- If a shared style is needed across multiple templates, introduce a
-  `base.html` and a `static/journal/style.css` — do not duplicate rules.
-- Color palette (established in Phase 1):
-  - Background: `#f9f9f7`
-  - Cards: `#ffffff` with `1px solid #e8e8e6`
-  - Body text: `#1a1a1a`
-  - Secondary text: `#666`
-  - Border/dividers: `#e8e8e6`
-  - Primary button: `#1a1a1a` background, `#fff` text
+- Shared styles live in `journal/static/journal/style.css`, linked from
+  `base.html`. Every template extends `base.html` — do not duplicate rules or
+  add new `<style>` blocks.
+- **Color palette is a dark blue theme, defined as CSS custom properties in
+  `:root`** at the top of `style.css` — always reference `var(--name)`, never
+  hardcode a hex value in CSS or inline in a template:
+  - `--bg` (page background, darkest) → `--bg-card` (cards, form fields) →
+    `--bg-input` (fixed input-area background — kept a distinct shade from
+    `--bg` on purpose)
+  - `--text` (primary/body text, lightest) → `--text-secondary` → `--text-muted`
+    (meta stamps, labels — least prominent)
+  - `--border` for all borders/dividers
+  - `--accent` / `--accent-hover` / `--accent-text` — blue accent, used for
+    primary buttons (Save, Done) and focus states. The overall hue is
+    intentionally blue; do not introduce a different accent color.
+  - `--btn-secondary-bg` / `--btn-secondary-text` / `--btn-secondary-hover` —
+    muted secondary buttons (Remind me tomorrow, comment submit)
+  - `--error` for inline error text
+  - Adding a new UI element should reuse these variables rather than picking
+    a new color.
 
 ---
 
@@ -236,18 +257,58 @@ only render a section if its list is non-empty.
 
 ---
 
-## Phase 2 migration path (for when auth is added)
+## What Phase 6 & 7 delivered (already done — do not redo)
 
-The user FK on Entry is already present as `null=True, blank=True`.
-When Phase 7 begins, the only changes needed are:
+**Phase 6 — Archive page:**
 
-1. `Entry.user` → remove `null=True, blank=True`
-2. Add `user=request.user` to `Entry.objects.create(...)` calls
-3. Add `.filter(user=request.user)` to all Entry queries
-4. Add `Comment.user` FK (same pattern)
-5. Generate and apply one migration
+- `archive` view: `Entry.objects.filter(current_stage=8).order_by('-archived_at')`,
+  rendered via `archive.html`, reusing `_review_card.html` for each entry.
+- `read_only=True` is passed in the view context and checked with
+  `{% if not read_only %}` in `_review_card.html` to hide the comment form and
+  Done/Remind-me actions on archived (read-only) cards — comments already on
+  the entry still display.
+- Linked from `home.html` via a `journal:archive` nav link — no separate nav bar.
 
-No model redesign, no data restructuring.
+**Phase 7 — Auth + multi-user:**
+
+The Phase 2 migration path played out exactly as planned:
+
+1. `Entry.user` → `null=True, blank=True` removed (now required)
+2. `user=request.user` added to the `Entry.objects.create(...)` call in `home`
+3. `.filter(user=request.user)` added to every Entry query, and
+   `get_object_or_404(Entry, pk=pk, user=request.user)` in every pk-based view
+4. `Comment.user` FK added (same pattern)
+5. One migration (`journal/migrations/0002_phase7_auth_ownership.py`) covers both
+
+Additional Phase 7 conventions:
+
+- Every view is decorated `@login_required`; `LOGIN_URL = 'login'` and
+  `LOGIN_REDIRECT_URL = 'journal:home'` in `recall/settings.py`.
+- `django.contrib.auth.urls` is included at `accounts/` in `recall/urls.py` —
+  this provides `login`/`logout` without custom views.
+- `journal/templates/registration/login.html` is Django's expected path for
+  the login template — do not move it.
+- `base.html` renders an account bar (username + logout button) when
+  `user.is_authenticated`, shared across every page since all templates
+  extend `base.html`.
+
+---
+
+## Collapsible bottom input area (UI enhancement, done)
+
+The fixed-bottom entry input (title + body + Save) can now be collapsed out
+of the way when the user wants more room to review cards, instead of always
+taking up screen space:
+
+- A chevron toggle (`.input-toggle`, an inline SVG in `home.html`) sits above
+  the input form, inside `.input-area`.
+- Clicking it toggles a `.collapsed` class on `.input-area` (JS listener in
+  `base.html`, same click-to-toggle pattern as the card expand/collapse).
+- CSS animates `.input-content` between its natural height and `max-height: 0`,
+  and rotates the chevron 180° to flip between pointing up (expanded — click
+  to collapse) and down (collapsed — click to expand).
+- The Title/body form markup itself is unchanged — only wrapped in the new
+  `.input-toggle` + `.input-content` structure.
 
 ---
 
