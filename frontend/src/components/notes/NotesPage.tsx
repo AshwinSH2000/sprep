@@ -51,7 +51,7 @@ export function NotesPage() {
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {entries.map((entry) => (
-            <EntryCard key={entry.id} entry={entry} readOnly />
+            <EntryCard key={entry.id} entry={entry} readOnly overlay />
           ))}
         </div>
       )}
