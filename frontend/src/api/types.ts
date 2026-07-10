@@ -16,6 +16,12 @@ export interface Entry {
   due_date: string | null
   is_editable: boolean
   comments: Comment[]
+  tags: string[]
+}
+
+export interface Tag {
+  id: number
+  name: string
 }
 
 export type DueEntriesResponse = Record<string, Entry[]>

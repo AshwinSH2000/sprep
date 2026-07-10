@@ -6,6 +6,10 @@ export const queryKeys = {
     due: ['entries', 'due'] as const,
     flagged: ['entries', 'flagged'] as const,
     archive: ['entries', 'archive'] as const,
+    search: (q: string, tags: string[]) => ['entries', 'all', q, tags] as const,
+  },
+  tags: {
+    all: ['tags'] as const,
   },
   auth: {
     me: ['auth', 'me'] as const,

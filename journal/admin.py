@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Entry, ReviewLog, Comment
+from .models import Entry, ReviewLog, Comment, Tag
 
 
 class ReviewLogInline(admin.TabularInline):
@@ -24,7 +24,15 @@ class EntryAdmin(admin.ModelAdmin):
     list_filter = ('current_stage', 'reminder_flag', 'user')
     search_fields = ('title', 'body')
     readonly_fields = ('archived_at',)
+    filter_horizontal = ('tags',)
     inlines = [ReviewLogInline, CommentInline]
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('name', 'user')
+    list_filter = ('user',)
+    search_fields = ('name',)
 
 
 @admin.register(ReviewLog)

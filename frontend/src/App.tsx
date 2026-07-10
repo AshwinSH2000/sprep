@@ -4,6 +4,7 @@ import { LoginPage } from './components/auth/LoginPage'
 import { RequireAuth } from './components/auth/RequireAuth'
 import { Dashboard } from './components/dashboard/Dashboard'
 import { AppShell } from './components/layout/AppShell'
+import { NotesPage } from './components/notes/NotesPage'
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route element={<AppShell />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/archive" element={<ArchivePage />} />
+          <Route path="/notes" element={<NotesPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -4,11 +4,12 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
-from .models import Entry, ReviewLog, STAGE_INTERVALS, STAGE_LABELS
-from .serializers import CommentSerializer, EntrySerializer
+from .models import Entry, ReviewLog, Tag, STAGE_INTERVALS, STAGE_LABELS
+from .serializers import CommentSerializer, EntrySerializer, TagSerializer
 
 
 class EntryCreateAPIView(generics.CreateAPIView):
@@ -57,6 +58,28 @@ class ArchiveAPIView(APIView):
             user=request.user, current_stage=8,
         ).order_by('-archived_at')
         return Response(EntrySerializer(entries, many=True).data)
+
+
+class AllEntriesAPIView(APIView):
+    def get(self, request):
+        entries = Entry.objects.filter(user=request.user)
+        query = request.query_params.get('q', '').strip()
+        if query:
+            entries = entries.filter(
+                Q(title__icontains=query) | Q(body__icontains=query)
+            )
+        # ?tags=a,b narrows to entries carrying every named tag (AND).
+        tags_param = request.query_params.get('tags', '')
+        tag_names = [t.strip() for t in tags_param.split(',') if t.strip()]
+        for name in tag_names:
+            entries = entries.filter(tags__name=name)
+        return Response(EntrySerializer(entries.distinct(), many=True).data)
+
+
+class TagListAPIView(APIView):
+    def get(self, request):
+        tags = Tag.objects.filter(user=request.user)
+        return Response(TagSerializer(tags, many=True).data)
 
 
 class EntryMarkDoneAPIView(APIView):

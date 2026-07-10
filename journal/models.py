@@ -27,6 +27,27 @@ STAGE_LABELS = {
 }
 
 
+class Tag(models.Model):
+    """
+    Free-text label attached to entries (Phase 12).
+    Tags are per-user — the same name can exist independently for two users,
+    but is unique within a single user's set.
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='tags',
+    )
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        ordering = ['name']
+        unique_together = ('user', 'name')
+
+    def __str__(self):
+        return self.name
+
+
 class Entry(models.Model):
     user = models.ForeignKey(
         User,
@@ -37,6 +58,12 @@ class Entry(models.Model):
     # ── Core fields ───────────────────────────────────────────────────────────
     title = models.CharField(max_length=255)
     body = models.TextField()
+
+    # Phase 12 — the first change to the "locked" data model: free-text tags.
+    # Many-to-many so an entry can carry several tags and a tag many entries.
+    # Always scoped to the entry's own user (Tag.user == Entry.user); the
+    # serializer get-or-creates Tag rows under request.user, never crossing users.
+    tags = models.ManyToManyField(Tag, related_name='entries', blank=True)
 
     # stored as date (not datetime) — scheduling compares against today's date
     created_at = models.DateField(default=timezone.localdate)

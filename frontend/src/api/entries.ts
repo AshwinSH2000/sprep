@@ -1,8 +1,12 @@
 import { client } from './client'
-import type { DueEntriesResponse, Entry, Comment } from './types'
+import type { DueEntriesResponse, Entry, Comment, Tag } from './types'
 
-export async function createEntry(title: string, body: string): Promise<Entry> {
-  const { data } = await client.post<Entry>('/entries/', { title, body })
+export async function createEntry(
+  title: string,
+  body: string,
+  tags: string[] = [],
+): Promise<Entry> {
+  const { data } = await client.post<Entry>('/entries/', { title, body, tags })
   return data
 }
 
@@ -23,6 +27,18 @@ export async function fetchFlagged(): Promise<Entry[]> {
 
 export async function fetchArchive(): Promise<Entry[]> {
   const { data } = await client.get<Entry[]>('/entries/archive/')
+  return data
+}
+
+export async function fetchAllEntries(q: string, tags: string[] = []): Promise<Entry[]> {
+  const { data } = await client.get<Entry[]>('/entries/all/', {
+    params: { q, tags: tags.join(',') },
+  })
+  return data
+}
+
+export async function fetchTags(): Promise<Tag[]> {
+  const { data } = await client.get<Tag[]>('/tags/')
   return data
 }
 

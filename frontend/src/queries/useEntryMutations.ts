@@ -20,8 +20,9 @@ function removeFromDue(due: DueEntriesResponse | undefined, id: number): DueEntr
 export function useCreateEntry() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ title, body }: { title: string; body: string }) => createEntry(title, body),
-    onMutate: async ({ title, body }) => {
+    mutationFn: ({ title, body, tags }: { title: string; body: string; tags: string[] }) =>
+      createEntry(title, body, tags),
+    onMutate: async ({ title, body, tags }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.entries.today })
       const previous = queryClient.getQueryData<Entry[]>(queryKeys.entries.today)
       const optimisticEntry: Entry = {
@@ -36,6 +37,7 @@ export function useCreateEntry() {
         due_date: null,
         is_editable: true,
         comments: [],
+        tags,
       }
       queryClient.setQueryData<Entry[]>(queryKeys.entries.today, (old) => [
         ...(old ?? []),
@@ -48,6 +50,8 @@ export function useCreateEntry() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.entries.today })
+      // A submit may have introduced brand-new tags — refresh autocomplete.
+      queryClient.invalidateQueries({ queryKey: queryKeys.tags.all })
     },
   })
 }

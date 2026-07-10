@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Entry } from '../../api/types'
 import { formatArchivedDate } from '../../lib/formatDate'
+import { Markdown } from '../markdown/Markdown'
 import { CardActions } from './CardActions'
 import { CommentForm } from './CommentForm'
 import { CommentsList } from './CommentsList'
@@ -30,7 +31,19 @@ export function EntryCard({ entry, readOnly = false }: EntryCardProps) {
 
       {expanded && (
         <div className="border-t border-border px-4 py-3">
-          <p className="whitespace-pre-wrap text-sm text-text-secondary">{entry.body}</p>
+          <Markdown>{entry.body}</Markdown>
+          {entry.tags.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {entry.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-btn-secondary-bg px-2 py-0.5 text-xs text-btn-secondary-text"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
           <CommentsList comments={entry.comments} />
           {!readOnly && (
             <>

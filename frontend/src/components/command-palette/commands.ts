@@ -18,6 +18,7 @@ export function buildCommands({ navigate, onLogout }: BuildCommandsArgs): Comman
   return [
     { id: 'go-home', label: 'Go to Recall', run: () => navigate('/') },
     { id: 'go-archive', label: 'Go to Archive', run: () => navigate('/archive') },
+    { id: 'browse-notes', label: 'Browse all notes', run: () => navigate('/notes') },
     {
       id: 'focus-input',
       label: 'Focus new entry input',

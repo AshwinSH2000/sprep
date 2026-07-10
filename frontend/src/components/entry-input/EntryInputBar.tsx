@@ -1,13 +1,17 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { FOCUS_ENTRY_INPUT_EVENT } from '../command-palette/commands'
 import { useCreateEntry } from '../../queries/useEntryMutations'
+import { useTags } from '../../queries/useEntries'
+import { TagInput } from '../tags/TagInput'
 
 export function EntryInputBar() {
   const [collapsed, setCollapsed] = useState(false)
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
+  const [tags, setTags] = useState<string[]>([])
   const titleRef = useRef<HTMLInputElement>(null)
   const createEntry = useCreateEntry()
+  const { data: allTags = [] } = useTags()
 
   useEffect(() => {
     function handleFocusRequest() {
@@ -23,11 +27,12 @@ export function EntryInputBar() {
     e.preventDefault()
     if (!title.trim() || !body.trim()) return
     createEntry.mutate(
-      { title: title.trim(), body: body.trim() },
+      { title: title.trim(), body: body.trim(), tags },
       {
         onSuccess: () => {
           setTitle('')
           setBody('')
+          setTags([])
         },
       },
     )
@@ -77,6 +82,10 @@ export function EntryInputBar() {
               rows={3}
               className="resize-none rounded-md border border-border bg-bg-card px-3 py-2 text-text outline-none focus:border-accent"
             />
+            <span className="text-xs text-text-muted">
+              Markdown supported — **bold**, *italics*, - lists, [links](url)
+            </span>
+            <TagInput value={tags} onChange={setTags} suggestions={allTags.map((t) => t.name)} />
             <button
               type="submit"
               disabled={createEntry.isPending}
