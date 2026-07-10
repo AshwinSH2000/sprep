@@ -1,5 +1,4 @@
 import { Outlet } from 'react-router-dom'
-import { AccountBar } from './AccountBar'
 import { NavBar } from './NavBar'
 import { CommandPalette } from '../command-palette/CommandPalette'
 import { useCommandPalette } from '../command-palette/useCommandPalette'
@@ -9,7 +8,6 @@ export function AppShell() {
 
   return (
     <div className="min-h-screen bg-bg text-text">
-      <AccountBar />
       <NavBar />
       <main className="mx-auto max-w-5xl px-6 pb-40 pt-6">
         <Outlet />

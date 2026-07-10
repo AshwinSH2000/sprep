@@ -18,7 +18,7 @@ export function Dashboard() {
 
   return (
     <>
-      <h1 className="text-3xl font-semibold text-text">Recall</h1>
+      <h1 className="text-3xl font-semibold text-text">SpRep</h1>
       <p className="mb-6 text-text-secondary">{todayLabel}</p>
 
       {Object.entries(flagged).map(([reminderDate, entries]) => (

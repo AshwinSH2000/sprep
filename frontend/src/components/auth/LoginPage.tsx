@@ -22,7 +22,7 @@ export function LoginPage() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-xl border border-border bg-bg-card p-8 shadow-[0_0_40px_-10px_var(--color-accent)]"
       >
-        <h1 className="mb-6 text-2xl font-semibold text-text">Recall</h1>
+        <h1 className="mb-6 text-2xl font-semibold text-text">SpRep</h1>
         <label className="mb-1 block text-sm text-text-secondary" htmlFor="username">
           Username
         </label>

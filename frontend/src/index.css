@@ -1,32 +1,36 @@
 @import "tailwindcss";
 
 /*
- * Dark blue theme tokens — 1:1 port of the custom properties that used to
- * live in journal/static/journal/style.css's :root block. Only use the
- * generated utilities from these tokens (bg-bg-card, text-text-secondary,
- * bg-accent, etc.) — never a raw Tailwind palette class or a hardcoded hex,
- * so the accent hue stays locked to blue.
+ * Teal-and-violet theme tokens (replaces the original flat dark-blue
+ * palette). Only use the generated utilities from these tokens (bg-bg-card,
+ * text-text-secondary, bg-accent, etc.) — never a raw Tailwind palette class
+ * or a hardcoded hex — so the palette stays consistent and swappable from
+ * one place.
  */
 @theme {
-  --color-bg: #0e1b2e;
-  --color-bg-card: #17293f;
-  --color-bg-input: #1c3049;
+  --color-bg: #191726;
+  --color-bg-card: #221f36;
+  --color-bg-input: #2a2642;
 
-  --color-text: #e9eef7;
-  --color-text-secondary: #9db0cc;
-  --color-text-muted: #71859f;
+  --color-text: #f1edfa;
+  --color-text-secondary: #b0a6cf;
+  --color-text-muted: #8177a0;
 
-  --color-border: #2a3c58;
+  --color-border: #362f4d;
 
-  --color-accent: #4f8ff7;
-  --color-accent-hover: #6ea3f9;
+  --color-accent: #0f766e;
+  --color-accent-hover: #14b8a6;
   --color-accent-text: #ffffff;
 
-  --color-btn-secondary-bg: #24374f;
-  --color-btn-secondary-text: #cdd8ea;
-  --color-btn-secondary-hover: #2e4262;
+  --color-btn-secondary-bg: #2a2642;
+  --color-btn-secondary-text: #d3c9ec;
+  --color-btn-secondary-hover: #362f4d;
 
-  --color-error: #ff7a7a;
+  --color-error: #ff6b6b;
+
+  /* Fixed dark chip behind the theme-toggle icon so it reads as white in
+     both themes rather than washing out against a light background. */
+  --color-toggle-bg: #241f3a;
 }
 
 /*
@@ -36,25 +40,28 @@
  * block above stay the default so an unset attribute still renders dark.
  */
 :root[data-theme='light'] {
-  --color-bg: #f4f7fc;
+  --color-bg: #f7f3fb;
   --color-bg-card: #ffffff;
-  --color-bg-input: #eaf0fa;
+  --color-bg-input: #f0eaf8;
 
-  --color-text: #16233a;
-  --color-text-secondary: #45577a;
-  --color-text-muted: #71859f;
+  --color-text: #241f38;
+  --color-text-secondary: #5c527a;
+  --color-text-muted: #8c81a8;
 
-  --color-border: #d7e0ee;
+  --color-border: #e2d9f0;
 
-  --color-accent: #2f6fe0;
-  --color-accent-hover: #255bc2;
+  --color-accent: #0f766e;
+  --color-accent-hover: #0b5c56;
   --color-accent-text: #ffffff;
 
-  --color-btn-secondary-bg: #e5ebf5;
-  --color-btn-secondary-text: #2c3c58;
-  --color-btn-secondary-hover: #d7e0ee;
+  --color-btn-secondary-bg: #f0eaf8;
+  --color-btn-secondary-text: #3d3459;
+  --color-btn-secondary-hover: #e2d9f0;
 
-  --color-error: #d64545;
+  --color-error: #d6453f;
+
+  /* Stays dark even in light mode — see note in the dark block above. */
+  --color-toggle-bg: #241f3a;
 }
 
 body {

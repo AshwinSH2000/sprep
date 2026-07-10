@@ -41,7 +41,7 @@ export function NotesPage() {
       <h1 className="text-3xl font-semibold text-text">All Notes</h1>
       <p className="mb-6">
         <Link to="/" className="text-sm text-accent hover:text-accent-hover">
-          ← Back to Recall
+          ← Back to SpRep
         </Link>
       </p>
 

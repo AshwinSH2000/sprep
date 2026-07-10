@@ -17,7 +17,7 @@ interface BuildCommandsArgs {
 
 export function buildCommands({ navigate, onLogout }: BuildCommandsArgs): Command[] {
   return [
-    { id: 'go-home', label: 'Go to Recall', run: () => navigate('/') },
+    { id: 'go-home', label: 'Go to SpRep', run: () => navigate('/') },
     { id: 'go-archive', label: 'Go to Archive', run: () => navigate('/archive') },
     { id: 'browse-notes', label: 'Browse all notes', run: () => navigate('/notes') },
     { id: 'go-stats', label: 'View stats', run: () => navigate('/stats') },
