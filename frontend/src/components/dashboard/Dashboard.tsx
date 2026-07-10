@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import { useDueEntries, useFlaggedEntries, useTodaysEntries } from '../../queries/useEntries'
 import { EntryInputBar } from '../entry-input/EntryInputBar'
 import { ReviewSection } from './ReviewSection'
@@ -19,12 +18,7 @@ export function Dashboard() {
   return (
     <>
       <h1 className="text-3xl font-semibold text-text">Recall</h1>
-      <p className="mb-1 text-text-secondary">{todayLabel}</p>
-      <p className="mb-6">
-        <Link to="/archive" className="text-sm text-accent hover:text-accent-hover">
-          View archive →
-        </Link>
-      </p>
+      <p className="mb-6 text-text-secondary">{todayLabel}</p>
 
       <ReviewSection label="Flagged for review" entries={flagged} />
 

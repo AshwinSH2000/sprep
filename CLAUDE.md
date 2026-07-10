@@ -56,7 +56,7 @@ frontend/              ← React SPA (Vite + TypeScript + Tailwind)
     api/                 ← axios client + typed endpoint wrapper functions
     queries/              ← React Query hooks (queryKeys, useEntries, useEntryMutations, useAuth)
     components/
-      layout/             ← AppShell, AccountBar
+      layout/             ← AppShell, AccountBar, NavBar
       auth/                ← LoginPage, RequireAuth
       dashboard/           ← Dashboard, ReviewSection, TodaysEntriesList, EntryCard,
                               CommentsList, CommentForm, CardActions
@@ -286,11 +286,15 @@ frontend entirely:
 - **Optimistic Done**: clicking Done removes the card from the cache (and
   deletes its stage group if that empties it) before the server responds —
   see the React/Tailwind coding rules above for the exact pattern.
-- **Command palette**: `Cmd/Ctrl+K` opens a modal with four actions — go to
-  Recall, go to Archive, focus the new-entry input, log out. "Mark the
-  focused card done" (mentioned in the original ask) was deliberately left
-  as a future addition — it needs a focus-tracking concept the other actions
-  don't, and wasn't worth the scope for a first pass.
+- **Command palette**: `Cmd/Ctrl+K` opens a modal with quick actions — go to
+  Recall, go to Archive, focus the new-entry input, log out (later phases
+  added browse-notes, view-stats, and the two export actions — see below and
+  `commands.ts`). "Mark the focused card done" (mentioned in the original
+  ask) was deliberately left as a future addition — it needs a
+  focus-tracking concept the other actions don't, and wasn't worth the scope
+  for a first pass. A persistent `NavBar` (added post-Phase-15, see note
+  after Phase 15 below) now covers the same routes/export actions visibly,
+  so the palette is a keyboard-first shortcut rather than the only way in.
 - Dark-blue theme ported 1:1 from the old CSS custom properties into a
   Tailwind v4 `@theme` block in `index.css` (`--color-bg`, `--color-accent`, etc.).
 
@@ -521,6 +525,22 @@ saves the attachment without leaving the SPA. No schema changes.
 - Purely additive — no schema changes. Good candidate to ship quickly
   since it builds trust ("my data isn't locked in") independent of other
   phases.
+
+---
+
+### Post-Phase-15 addition — persistent NavBar
+
+**Delivered:** `/notes`, `/archive`, `/stats`, and the two export actions
+(Markdown zip / JSON) were command-palette-only with no visible entry point
+anywhere in the UI — a discoverability gap for anyone who doesn't know
+`Cmd/Ctrl+K`. Added `components/layout/NavBar.tsx`, rendered in `AppShell`
+directly below `AccountBar`: text links for Dashboard/Notes/Archive/Stats
+(bold when active, via `useLocation().pathname` — the first use of
+route-based active-state in the frontend) plus an "Export ▾" dropdown
+triggering the same `downloadExport('md' | 'json')` used by the command
+palette. Removed the now-redundant inline "View archive →" link from
+`Dashboard.tsx`. The command palette is untouched and still works
+side-by-side as a keyboard-first shortcut. No backend changes.
 
 ---
 
