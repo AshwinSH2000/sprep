@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'journal',                    # ← our app
 ]
 
@@ -94,9 +95,20 @@ USE_TZ = True              # all datetimes stored as UTC, converted on display
 STATIC_URL = 'static/'
 
 
-# ── Auth (Phase 7) ──────────────────────────────────────────────────────────────
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'journal:home'
-LOGOUT_REDIRECT_URL = 'login'
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ── Django REST Framework (Phase 8) ───────────────────────────────────────────
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+# The Vite dev server (localhost:5173) proxies /api/* to this Django server.
+# Its proxy forwards the browser's real Origin header through unchanged, so
+# Django's CSRF Origin check needs to trust it explicitly.
+CSRF_TRUSTED_ORIGINS = ['http://localhost:5173']
