@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSearchEntries, useTags } from '../../queries/useEntries'
+import { useBulkAction } from '../../queries/useEntryMutations'
+import { BulkActionsBar } from '../bulk-actions/BulkActionsBar'
 import { EntryCard } from '../dashboard/EntryCard'
 import { TagInput } from '../tags/TagInput'
 
@@ -8,7 +10,9 @@ export function NotesPage() {
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [tags, setTags] = useState<string[]>([])
+  const [selectedIds, setSelectedIds] = useState<number[]>([])
   const { data: allTags = [] } = useTags()
+  const bulkAction = useBulkAction()
 
   // Debounce the search input (~300ms) so we don't fire a request per keystroke.
   useEffect(() => {
@@ -18,6 +22,19 @@ export function NotesPage() {
 
   const { data: entries = [] } = useSearchEntries(debouncedQuery, tags)
   const hasFilter = debouncedQuery !== '' || tags.length > 0
+
+  function toggleSelect(id: number) {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    )
+  }
+
+  function runBulk(action: 'flag' | 'delete') {
+    bulkAction.mutate(
+      { ids: selectedIds, action },
+      { onSuccess: () => setSelectedIds([]) },
+    )
+  }
 
   return (
     <>
@@ -44,6 +61,14 @@ export function NotesPage() {
         />
       </div>
 
+      <BulkActionsBar
+        selectedCount={selectedIds.length}
+        onFlag={() => runBulk('flag')}
+        onDelete={() => runBulk('delete')}
+        onClear={() => setSelectedIds([])}
+        pending={bulkAction.isPending}
+      />
+
       {entries.length === 0 ? (
         <p className="text-sm text-text-muted">
           {hasFilter ? 'No results for your search' : 'No notes yet'}
@@ -51,7 +76,14 @@ export function NotesPage() {
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {entries.map((entry) => (
-            <EntryCard key={entry.id} entry={entry} readOnly overlay />
+            <EntryCard
+              key={entry.id}
+              entry={entry}
+              readOnly
+              overlay
+              selected={selectedIds.includes(entry.id)}
+              onToggleSelect={() => toggleSelect(entry.id)}
+            />
           ))}
         </div>
       )}

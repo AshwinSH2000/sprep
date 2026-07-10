@@ -1,5 +1,12 @@
 import { client } from './client'
-import type { DueEntriesResponse, Entry, Comment, Tag } from './types'
+import type {
+  BulkActionResult,
+  DueEntriesResponse,
+  Entry,
+  Comment,
+  FlaggedEntriesResponse,
+  Tag,
+} from './types'
 
 export async function createEntry(
   title: string,
@@ -20,8 +27,8 @@ export async function fetchDue(): Promise<DueEntriesResponse> {
   return data
 }
 
-export async function fetchFlagged(): Promise<Entry[]> {
-  const { data } = await client.get<Entry[]>('/entries/flagged/')
+export async function fetchFlagged(): Promise<FlaggedEntriesResponse> {
+  const { data } = await client.get<FlaggedEntriesResponse>('/entries/flagged/')
   return data
 }
 
@@ -47,12 +54,20 @@ export async function markDone(id: number): Promise<Entry> {
   return data
 }
 
-export async function remindTomorrow(id: number): Promise<Entry> {
-  const { data } = await client.post<Entry>(`/entries/${id}/remind/`)
+export async function remindTomorrow(id: number, date?: string): Promise<Entry> {
+  const { data } = await client.post<Entry>(`/entries/${id}/remind/`, date ? { date } : {})
   return data
 }
 
 export async function addComment(id: number, body: string): Promise<Comment> {
   const { data } = await client.post<Comment>(`/entries/${id}/comments/`, { body })
+  return data
+}
+
+export async function bulkAction(
+  ids: number[],
+  action: 'flag' | 'delete',
+): Promise<BulkActionResult> {
+  const { data } = await client.post<BulkActionResult>('/entries/bulk/', { ids, action })
   return data
 }

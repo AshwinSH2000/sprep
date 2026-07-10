@@ -1,10 +1,11 @@
 import { useDueEntries, useFlaggedEntries, useTodaysEntries } from '../../queries/useEntries'
+import { formatReminderLabel } from '../../lib/formatDate'
 import { EntryInputBar } from '../entry-input/EntryInputBar'
 import { ReviewSection } from './ReviewSection'
 import { TodaysEntriesList } from './TodaysEntriesList'
 
 export function Dashboard() {
-  const { data: flagged = [] } = useFlaggedEntries()
+  const { data: flagged = {} } = useFlaggedEntries()
   const { data: due = {} } = useDueEntries()
   const { data: today = [] } = useTodaysEntries()
 
@@ -20,7 +21,13 @@ export function Dashboard() {
       <h1 className="text-3xl font-semibold text-text">Recall</h1>
       <p className="mb-6 text-text-secondary">{todayLabel}</p>
 
-      <ReviewSection label="Flagged for review" entries={flagged} />
+      {Object.entries(flagged).map(([reminderDate, entries]) => (
+        <ReviewSection
+          key={reminderDate}
+          label={`Flagged for review — ${formatReminderLabel(reminderDate)}`}
+          entries={entries}
+        />
+      ))}
 
       {Object.entries(due).map(([label, entries]) => (
         <ReviewSection key={label} label={label} entries={entries} />

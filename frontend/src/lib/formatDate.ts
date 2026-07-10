@@ -20,3 +20,23 @@ export function formatArchivedDate(isoString: string): string {
     year: 'numeric',
   }).format(new Date(isoString))
 }
+
+// Labels a flagged section grouped by reminder_date (Phase 16). "Unscheduled"
+// passes through unchanged (legacy flagged entries with no reminder_date).
+export function formatReminderLabel(dateOrLabel: string): string {
+  if (dateOrLabel === 'Unscheduled') return dateOrLabel
+  const [year, month, day] = dateOrLabel.split('-').map(Number)
+  const date = new Date(year, month - 1, day)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(today.getDate() + 1)
+
+  if (date.getTime() === today.getTime()) return 'Today'
+  if (date.getTime() === tomorrow.getTime()) return 'Tomorrow'
+  return new Intl.DateTimeFormat('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  }).format(date)
+}

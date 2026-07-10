@@ -74,9 +74,13 @@ class Entry(models.Model):
     # 8 = archived
     current_stage = models.PositiveSmallIntegerField(default=0)
 
-    # True while the user has asked to be reminded again tomorrow.
+    # True while the user has asked to be reminded again on a given date.
     # Cleared automatically when Done is clicked on the flagged card.
     reminder_flag = models.BooleanField(default=False)
+
+    # The date the user asked to be reminded on (Phase 16 — custom snooze).
+    # Set whenever reminder_flag is set True; cleared alongside it.
+    reminder_date = models.DateField(null=True, blank=True)
 
     # Set when current_stage reaches 8. Null until then.
     archived_at = models.DateTimeField(null=True, blank=True)
@@ -118,13 +122,17 @@ class Entry(models.Model):
             self.current_stage = 8
             self.archived_at = timezone.now()
         self.reminder_flag = False  # always clear flag on Done
+        self.reminder_date = None
 
-    def flag_for_reminder(self):
+    def flag_for_reminder(self, date=None):
         """
-        Call this when the user clicks 'Remind me tomorrow'.
+        Call this when the user clicks 'Remind me on <date>'.
+        Defaults to tomorrow when no date is given (Phase 16).
         Does NOT save — caller is responsible for .save().
         """
+        from datetime import timedelta
         self.reminder_flag = True
+        self.reminder_date = date or (timezone.localdate() + timedelta(days=1))
 
 
 class ReviewLog(models.Model):

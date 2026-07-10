@@ -82,6 +82,7 @@ body             TextField
 created_at       DateField (date only — not datetime)
 current_stage    PositiveSmallIntegerField (0–8)
 reminder_flag    BooleanField (default False)
+reminder_date    DateField (nullable; Phase 16 — set alongside reminder_flag)
 archived_at      DateTimeField (nullable)
 tags             ManyToManyField → Tag (Phase 12; blank=True)
 ```
@@ -252,14 +253,15 @@ only the delivery mechanism (templates+vanilla JS → JSON API+React) changed.
 POST   /api/entries/                    create an entry (title, body, tags[])
 GET    /api/entries/today/              stage-0 entries created today
 GET    /api/entries/due/                {"Day 2": [...], "Day 14": [...]} — non-flagged, due today or earlier
-GET    /api/entries/flagged/            reminder_flag=True entries
+GET    /api/entries/flagged/            reminder_flag=True entries, grouped by reminder_date (Phase 16)
 GET    /api/entries/archive/            stage-8 entries, most recently archived first
 GET    /api/entries/all/                every entry (Phase 11); ?q= title/body icontains, ?tags=a,b AND-filter
 GET    /api/tags/                       the user's tags, for autocomplete (Phase 12)
 GET    /api/stats/                      aggregated review/writing stats (Phase 14)
 GET    /api/entries/export/             ?format=json|md full-data download (Phase 15)
+POST   /api/entries/bulk/               {ids, action: "flag"|"delete"} on many entries at once (Phase 17)
 POST   /api/entries/<pk>/done/          write ReviewLog, advance_stage(), return updated entry
-POST   /api/entries/<pk>/remind/        flag_for_reminder(), return updated entry
+POST   /api/entries/<pk>/remind/        flag_for_reminder(date?), default tomorrow (Phase 16), return updated entry
 POST   /api/entries/<pk>/comments/      add a comment, return it (201)
 GET    /api/auth/csrf/                  force-sets the csrftoken cookie
 POST   /api/auth/login/                 session login, {id, username} or 400
@@ -365,9 +367,9 @@ in that phase's notes rather than silently drifting.
 - **Phase 13** ✅ Done — Rich text / Markdown entry bodies
 - **Phase 14** ✅ Done — Stats & insights dashboard
 - **Phase 15** ✅ Done — Export (Markdown/JSON)
-- **Phase 16** — Custom snooze (reminder-for-a-specific-date)
-- **Phase 17** — Bulk actions on Search/Archive
-- **Phase 18** — Light/dark theme toggle
+- **Phase 16** ✅ Done — Custom snooze (reminder-for-a-specific-date)
+- **Phase 17** ✅ Done — Bulk actions on Search/Archive
+- **Phase 18** ✅ Done — Light/dark theme toggle
 - **Phase 19** — PWA + due-today notifications
 - **Phase 20** — Entry linking ("see also")
 
@@ -544,9 +546,28 @@ side-by-side as a keyboard-first shortcut. No backend changes.
 
 ---
 
-### Phase 16 — Custom snooze
+### Phase 16 — Custom snooze ✅ Done
 
-**Goal:** "remind me tomorrow" becomes "remind me on \<date\>".
+**Delivered:** nullable `reminder_date` `DateField` on `Entry` (migration
+`0004_entry_reminder_date`), set alongside `reminder_flag` and cleared
+alongside it in `advance_stage()`. `Entry.flag_for_reminder(date=None)` now
+takes an optional date and defaults to tomorrow, matching the original
+"remind me tomorrow" behavior when no date is given. `POST
+/api/entries/<pk>/remind/` accepts an optional `{"date": "YYYY-MM-DD"}` body
+(400 on an unparseable date). `GET /api/entries/flagged/` changed shape from
+a flat list to grouped-by-`reminder_date` (`FlaggedEntriesResponse`, same
+shape as the due-entries grouping, e.g. `{"2026-07-11": [...], ...}`, key
+`"Unscheduled"` for legacy null dates), sorted ascending by date. Frontend:
+`Dashboard` renders one `ReviewSection` per reminder-date group, labeled via
+`formatReminderLabel` (`lib/formatDate.ts` — "Today"/"Tomorrow" special-cased,
+else `Mon 17 Jul`). `CardActions` replaced the single "Remind me tomorrow"
+button with that button plus a "Pick a date…" toggle revealing a native
+`<input type="date">` + "Set" button. `useRemindTomorrow` now takes
+`{id, date?}`; the `removeFromDue` cache helper was generalized to
+`removeFromGrouped` and reused for both `due` and `flagged`, since both are
+now the same `Record<string, Entry[]>` shape.
+
+**Original goal:** "remind me tomorrow" becomes "remind me on \<date\>".
 
 - Reuses the existing `reminder_flag` mechanism; add a nullable
   `reminder_date` field on `Entry`. If set, the flagged section sorts/groups
@@ -556,9 +577,27 @@ side-by-side as a keyboard-first shortcut. No backend changes.
 
 ---
 
-### Phase 17 — Bulk actions on Search/Archive
+### Phase 17 — Bulk actions on Search/Archive ✅ Done
 
-**Goal:** select multiple entries and act on them at once.
+**Delivered:** `POST /api/entries/bulk/` (`EntryBulkActionAPIView`) accepting
+`{ids: [...], action: "flag"|"delete"}`, scoped to `request.user` via
+`Entry.objects.filter(user=request.user, pk__in=ids)` like every other entry
+lookup; `"flag"` calls `flag_for_reminder()` (default tomorrow) on each
+matched entry, `"delete"` calls `.delete()` on the queryset and returns the
+count. No schema changes. Frontend: `components/bulk-actions/BulkActionsBar`
+(shared by `NotesPage` and `ArchivePage`) shows a "N selected" toolbar with
+"Flag for review" / "Delete" once any row is checked; delete requires a
+second click ("Delete" → "Confirm delete?" → fires) since it's the one
+destructive action in the app. `EntryCard` gained optional
+`selected`/`onToggleSelect` props — the header switched from a single
+`<button>` wrapping the whole row to a `<div>` containing an optional
+checkbox plus the expand `<button>`, since a checkbox can't nest inside a
+button. Selection state is local `useState<number[]>` in each page, cleared
+on successful bulk action. `useBulkAction` invalidates `due`, `flagged`,
+`archive`, and the Phase 11 search-results prefix (`queryKeys.entries.searchAll`,
+a new base key `search` builds on).
+
+**Original goal:** select multiple entries and act on them at once.
 
 - Checkbox selection state on the Phase 11 Notes page and the existing
   Archive page (local component state — no need for a global store).
@@ -570,9 +609,19 @@ side-by-side as a keyboard-first shortcut. No backend changes.
 
 ---
 
-### Phase 18 — Light/dark theme toggle
+### Phase 18 — Light/dark theme toggle ✅ Done
 
-**Goal:** a light variant of the existing palette, user-toggleable.
+**Delivered:** a `:root[data-theme='light']` block in `index.css` overriding
+every color custom property the dark `@theme` block defines (same token
+names, so no component changes were needed) — the unset/`dark` case still
+falls through to the original dark values. `lib/theme.ts` (`getStoredTheme`,
+`applyTheme`, `initTheme`) persists to `localStorage` under `recall-theme`
+and stamps `document.documentElement.dataset.theme`; `initTheme()` runs
+synchronously in `main.tsx` before the app renders (no flash of the wrong
+theme). `lib/useTheme.ts` is the React-facing hook (`{theme, toggleTheme}`),
+wired into a new toggle button in `AccountBar`, left of the username.
+
+**Original goal:** a light variant of the existing palette, user-toggleable.
 
 - Extend the `@theme` token block in `index.css` with a light-mode set;
   toggle via a `data-theme` attribute on `<html>` rather than duplicating

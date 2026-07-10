@@ -20,7 +20,7 @@ class CommentInline(admin.TabularInline):
 
 @admin.register(Entry)
 class EntryAdmin(admin.ModelAdmin):
-    list_display = ('title', 'user', 'created_at', 'current_stage', 'reminder_flag', 'archived_at')
+    list_display = ('title', 'user', 'created_at', 'current_stage', 'reminder_flag', 'reminder_date', 'archived_at')
     list_filter = ('current_stage', 'reminder_flag', 'user')
     search_fields = ('title', 'body')
     readonly_fields = ('archived_at',)

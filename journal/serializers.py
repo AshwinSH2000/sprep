@@ -35,11 +35,12 @@ class EntrySerializer(serializers.ModelSerializer):
         model = Entry
         fields = [
             'id', 'title', 'body', 'created_at', 'current_stage',
-            'reminder_flag', 'archived_at', 'stage_label', 'due_date',
-            'is_editable', 'comments', 'tags',
+            'reminder_flag', 'reminder_date', 'archived_at', 'stage_label',
+            'due_date', 'is_editable', 'comments', 'tags',
         ]
         read_only_fields = [
-            'id', 'created_at', 'current_stage', 'reminder_flag', 'archived_at',
+            'id', 'created_at', 'current_stage', 'reminder_flag',
+            'reminder_date', 'archived_at',
         ]
 
     def get_stage_label(self, obj):

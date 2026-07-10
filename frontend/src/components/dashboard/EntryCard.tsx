@@ -10,6 +10,8 @@ interface EntryCardProps {
   entry: Entry
   readOnly?: boolean
   overlay?: boolean
+  selected?: boolean
+  onToggleSelect?: () => void
 }
 
 function EntryCardDetails({
@@ -45,22 +47,40 @@ function EntryCardDetails({
   )
 }
 
-export function EntryCard({ entry, readOnly = false, overlay = false }: EntryCardProps) {
+export function EntryCard({
+  entry,
+  readOnly = false,
+  overlay = false,
+  selected = false,
+  onToggleSelect,
+}: EntryCardProps) {
   const [expanded, setExpanded] = useState(false)
 
   const cardHeader = (
-    <button
-      type="button"
-      onClick={() => setExpanded((prev) => !prev)}
-      className="flex w-full flex-col items-start px-4 py-3 text-left"
-    >
-      <span className="font-medium text-text">{entry.title}</span>
-      {entry.archived_at && (
-        <span className="mt-0.5 text-xs text-text-muted">
-          Archived {formatArchivedDate(entry.archived_at)}
-        </span>
+    <div className="flex w-full items-start gap-5 px-4 py-4">
+      {onToggleSelect && (
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={onToggleSelect}
+          onClick={(e) => e.stopPropagation()}
+          aria-label={`Select ${entry.title}`}
+          className="mt-1 h-4 w-4 shrink-0 accent-accent"
+        />
       )}
-    </button>
+      <button
+        type="button"
+        onClick={() => setExpanded((prev) => !prev)}
+        className="flex flex-1 flex-col items-start text-left"
+      >
+        <span className="font-medium text-text">{entry.title}</span>
+        {entry.archived_at && (
+          <span className="mt-0.5 text-xs text-text-muted">
+            Archived {formatArchivedDate(entry.archived_at)}
+          </span>
+        )}
+      </button>
+    </div>
   )
 
   if (overlay) {

@@ -14,6 +14,7 @@ urlpatterns = [
     path('entries/export/', api_views.EntryExportAPIView.as_view(), name='entries-export'),
     path('tags/', api_views.TagListAPIView.as_view(), name='tags-list'),
     path('stats/', api_views.StatsAPIView.as_view(), name='stats'),
+    path('entries/bulk/', api_views.EntryBulkActionAPIView.as_view(), name='entries-bulk'),
     path('entries/<int:pk>/done/', api_views.EntryMarkDoneAPIView.as_view(), name='entry-done'),
     path('entries/<int:pk>/remind/', api_views.EntryRemindTomorrowAPIView.as_view(), name='entry-remind'),
     path('entries/<int:pk>/comments/', api_views.EntryAddCommentAPIView.as_view(), name='entry-add-comment'),

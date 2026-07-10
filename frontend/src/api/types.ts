@@ -11,6 +11,7 @@ export interface Entry {
   created_at: string
   current_stage: number
   reminder_flag: boolean
+  reminder_date: string | null
   archived_at: string | null
   stage_label: string
   due_date: string | null
@@ -25,6 +26,14 @@ export interface Tag {
 }
 
 export type DueEntriesResponse = Record<string, Entry[]>
+// Grouped by reminder_date (ISO date string, or "Unscheduled") — same shape
+// as DueEntriesResponse (Phase 16).
+export type FlaggedEntriesResponse = Record<string, Entry[]>
+
+export interface BulkActionResult {
+  flagged?: number
+  deleted?: number
+}
 
 export interface WeeklyCount {
   week_start: string

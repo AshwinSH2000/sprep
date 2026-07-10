@@ -29,6 +29,34 @@
   --color-error: #ff7a7a;
 }
 
+/*
+ * Light variant of the theme tokens above (Phase 18). Toggled via a
+ * data-theme="light" attribute on <html> (see lib/theme.ts) rather than
+ * duplicating Tailwind classes everywhere — the dark values in the @theme
+ * block above stay the default so an unset attribute still renders dark.
+ */
+:root[data-theme='light'] {
+  --color-bg: #f4f7fc;
+  --color-bg-card: #ffffff;
+  --color-bg-input: #eaf0fa;
+
+  --color-text: #16233a;
+  --color-text-secondary: #45577a;
+  --color-text-muted: #71859f;
+
+  --color-border: #d7e0ee;
+
+  --color-accent: #2f6fe0;
+  --color-accent-hover: #255bc2;
+  --color-accent-text: #ffffff;
+
+  --color-btn-secondary-bg: #e5ebf5;
+  --color-btn-secondary-text: #2c3c58;
+  --color-btn-secondary-hover: #d7e0ee;
+
+  --color-error: #d64545;
+}
+
 body {
   @apply bg-bg text-text;
 }
