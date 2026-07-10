@@ -11,6 +11,9 @@ export const queryKeys = {
   tags: {
     all: ['tags'] as const,
   },
+  stats: {
+    all: ['stats'] as const,
+  },
   auth: {
     me: ['auth', 'me'] as const,
   },

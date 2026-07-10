@@ -1,15 +1,19 @@
 from datetime import timedelta
 
 from rest_framework import generics
+from rest_framework.renderers import BaseRenderer, JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
+from .export import build_markdown_zip, export_filename
 from .models import Entry, ReviewLog, Tag, STAGE_INTERVALS, STAGE_LABELS
 from .serializers import CommentSerializer, EntrySerializer, TagSerializer
+from .stats import build_stats
 
 
 class EntryCreateAPIView(generics.CreateAPIView):
@@ -80,6 +84,51 @@ class TagListAPIView(APIView):
     def get(self, request):
         tags = Tag.objects.filter(user=request.user)
         return Response(TagSerializer(tags, many=True).data)
+
+
+class StatsAPIView(APIView):
+    def get(self, request):
+        return Response(build_stats(request.user))
+
+
+class MarkdownZipRenderer(BaseRenderer):
+    """
+    Exists only to satisfy DRF's content negotiation: ?format= is DRF's
+    reserved format-override query param, so ?format=md would 404 during
+    negotiation unless a renderer claims the 'md' format. The export view
+    returns a raw HttpResponse for zips, so render() is never invoked.
+    """
+    media_type = 'application/zip'
+    format = 'md'
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        return data
+
+
+class EntryExportAPIView(APIView):
+    renderer_classes = [JSONRenderer, MarkdownZipRenderer]
+
+    def get(self, request):
+        # Content negotiation has already 404'd any ?format= value other
+        # than 'json' or 'md' (or absent, which defaults to JSON).
+        entries = Entry.objects.filter(user=request.user).prefetch_related(
+            'comments', 'tags',
+        )
+        if request.query_params.get('format') == 'md':
+            response = HttpResponse(
+                build_markdown_zip(entries), content_type='application/zip',
+            )
+            response['Content-Disposition'] = (
+                f'attachment; filename="{export_filename("zip")}"'
+            )
+            return response
+        return Response(
+            EntrySerializer(entries, many=True).data,
+            headers={
+                'Content-Disposition':
+                    f'attachment; filename="{export_filename("json")}"',
+            },
+        )
 
 
 class EntryMarkDoneAPIView(APIView):

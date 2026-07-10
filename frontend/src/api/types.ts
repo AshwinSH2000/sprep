@@ -26,6 +26,31 @@ export interface Tag {
 
 export type DueEntriesResponse = Record<string, Entry[]>
 
+export interface WeeklyCount {
+  week_start: string
+  count: number
+}
+
+export interface StageCount {
+  stage: number
+  label: string
+  count: number
+}
+
+export interface ReviewActivity {
+  total_reviews: number
+  on_time: number
+  late: number
+  on_time_rate: number | null
+}
+
+export interface StatsResponse {
+  entries_per_week: WeeklyCount[]
+  stage_distribution: StageCount[]
+  review_activity: ReviewActivity
+  current_streak: number
+}
+
 export type MeResponse =
   | { authenticated: true; id: number; username: string }
   | { authenticated: false }

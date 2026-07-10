@@ -256,6 +256,8 @@ GET    /api/entries/flagged/            reminder_flag=True entries
 GET    /api/entries/archive/            stage-8 entries, most recently archived first
 GET    /api/entries/all/                every entry (Phase 11); ?q= title/body icontains, ?tags=a,b AND-filter
 GET    /api/tags/                       the user's tags, for autocomplete (Phase 12)
+GET    /api/stats/                      aggregated review/writing stats (Phase 14)
+GET    /api/entries/export/             ?format=json|md full-data download (Phase 15)
 POST   /api/entries/<pk>/done/          write ReviewLog, advance_stage(), return updated entry
 POST   /api/entries/<pk>/remind/        flag_for_reminder(), return updated entry
 POST   /api/entries/<pk>/comments/      add a comment, return it (201)
@@ -357,8 +359,8 @@ in that phase's notes rather than silently drifting.
 - **Phase 11** ✅ Done — Search & Browse ("All Notes" page)
 - **Phase 12** ✅ Done — Tags & categorization
 - **Phase 13** ✅ Done — Rich text / Markdown entry bodies
-- **Phase 14** — Stats & insights dashboard
-- **Phase 15** — Export (Markdown/JSON)
+- **Phase 14** ✅ Done — Stats & insights dashboard
+- **Phase 15** ✅ Done — Export (Markdown/JSON)
 - **Phase 16** — Custom snooze (reminder-for-a-specific-date)
 - **Phase 17** — Bulk actions on Search/Archive
 - **Phase 18** — Light/dark theme toggle
@@ -459,9 +461,27 @@ instead of being rendered as plain text.
 
 ---
 
-### Phase 14 — Stats & insights dashboard
+### Phase 14 — Stats & insights dashboard ✅ Done
 
-**Goal:** a page showing review consistency over time.
+**Delivered:** `GET /api/stats/` (`StatsAPIView`, a one-liner into
+`journal/stats.py`, where all aggregation lives per the "business logic
+belongs in models" convention). Returns `entries_per_week` (last 12 Monday
+weeks via `TruncWeek`, zero-filled), `stage_distribution` (stages 0–8 with
+labels `New`/`Day 2`…`Archived`, zero-filled), `review_activity`
+(total/on-time/late/`on_time_rate` — a review is on time when it happened on
+the exact due date; stage-0 reviews count toward the total but neither
+bucket), and `current_streak` (consecutive days with an entry written or a
+review done; a quiet today doesn't break it). Snooze rate was dropped —
+"remind me tomorrow" clicks aren't persisted anywhere, so it isn't
+computable without a schema change. Frontend: `/stats` route with
+`components/stats/StatsPage` — three stat tiles (streak, reviews completed,
+on-time rate) and two `recharts` bar charts (per-week, per-stage), a "View
+stats" command-palette action, `useStats` hook (`queryKeys.stats.all`).
+**recharts is a new frontend dependency** (the phase's called-out stack
+addition); chart colors are passed as `var(--color-…)` strings so they stay
+on the locked theme tokens.
+
+**Original goal:** a page showing review consistency over time.
 
 - Candidate metrics: entries written per week, on-time review rate vs.
   "remind me tomorrow" snooze rate, current streak, stage distribution
@@ -475,9 +495,25 @@ instead of being rendered as plain text.
 
 ---
 
-### Phase 15 — Export
+### Phase 15 — Export ✅ Done
 
-**Goal:** let users download all their data.
+**Delivered:** `GET /api/entries/export/?format=json|md`
+(`EntryExportAPIView`; zip/Markdown assembly lives in `journal/export.py`,
+mirroring the `stats.py` split). `json` (the default when `format` is
+absent) returns the full `EntrySerializer` tree (comments, tags, computed
+fields) with a `Content-Disposition: attachment` filename
+`recall-export-<date>.json`; `md` streams a zip of one Markdown file per
+entry (`<id>-<slug>.md` — the id prefix keeps duplicate titles from
+colliding) with the title as `# heading`, body, a `Tags:` line, and a
+`## Comments` trailing section. One subtlety: `?format=` is DRF's reserved
+content-negotiation query param, so the view registers a no-op
+`MarkdownZipRenderer` (format `'md'`) alongside `JSONRenderer` — without it
+DRF 404s the request before the view runs; other `format` values therefore
+404. Frontend: two command-palette actions ("Export all notes (Markdown
+zip)" / "(JSON)") that hit the URL via `window.location`, so the browser
+saves the attachment without leaving the SPA. No schema changes.
+
+**Original goal:** let users download all their data.
 
 - `GET /api/entries/export/?format=json|md` — `json` returns the full
   entry+comment tree; `md` returns a zipped set of one Markdown file per
