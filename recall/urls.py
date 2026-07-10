@@ -20,6 +20,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('accounts/', include('django.contrib.auth.urls')),  # login, logout, etc.
-    path('', include('journal.urls')),   # all journal routes from /
+    path('api/', include('journal.api_urls')),  # DRF JSON API for the React SPA
 ]

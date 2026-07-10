@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+/*
+ * Dark blue theme tokens — 1:1 port of the custom properties that used to
+ * live in journal/static/journal/style.css's :root block. Only use the
+ * generated utilities from these tokens (bg-bg-card, text-text-secondary,
+ * bg-accent, etc.) — never a raw Tailwind palette class or a hardcoded hex,
+ * so the accent hue stays locked to blue.
+ */
+@theme {
+  --color-bg: #0e1b2e;
+  --color-bg-card: #17293f;
+  --color-bg-input: #1c3049;
+
+  --color-text: #e9eef7;
+  --color-text-secondary: #9db0cc;
+  --color-text-muted: #71859f;
+
+  --color-border: #2a3c58;
+
+  --color-accent: #4f8ff7;
+  --color-accent-hover: #6ea3f9;
+  --color-accent-text: #ffffff;
+
+  --color-btn-secondary-bg: #24374f;
+  --color-btn-secondary-text: #cdd8ea;
+  --color-btn-secondary-hover: #2e4262;
+
+  --color-error: #ff7a7a;
+}
+
+body {
+  @apply bg-bg text-text;
+}
