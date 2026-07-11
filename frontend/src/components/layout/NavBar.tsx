@@ -4,6 +4,7 @@ import { downloadExport } from '../../api/stats'
 import { useLogout, useMe } from '../../queries/useAuth'
 import { useTheme } from '../../lib/useTheme'
 import { useClickOutside } from '../../lib/useClickOutside'
+import { FaqModal } from '../faq/FaqModal'
 import { FloppyDiskIcon, MoonIcon, SunIcon } from './icons'
 
 const LINKS = [
@@ -21,6 +22,7 @@ export function NavBar() {
   const { theme, toggleTheme } = useTheme()
   const [exportOpen, setExportOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
+  const [faqOpen, setFaqOpen] = useState(false)
   const exportRef = useRef<HTMLDivElement>(null)
   const accountRef = useRef<HTMLDivElement>(null)
 
@@ -85,6 +87,15 @@ export function NavBar() {
           </div>
         )}
       </div>
+
+      <button
+        type="button"
+        onClick={() => setFaqOpen(true)}
+        className="text-text-secondary hover:text-text"
+      >
+        FAQ
+      </button>
+      <FaqModal open={faqOpen} onClose={() => setFaqOpen(false)} />
 
       <div className="ml-auto flex items-center gap-4">
         <button

@@ -633,6 +633,29 @@ wired into a new toggle button in `AccountBar`, left of the username.
 
 ---
 
+### Post-Phase-18 addition — FAQ / Guide modal ✅ Done
+
+**Delivered:** a new `components/faq/FaqModal.tsx` (same overlay/panel
+pattern as `CommandPalette.tsx` — fixed backdrop, click-outside-to-close,
+scrollable panel) explaining the app to users in plain language: what SpRep
+is, how to add an entry, what the "Done" button does (writes a `ReviewLog`
+and calls `advance_stage()`, walking Day 2 → 4 → 8 → 14 → 28 → 56 → 90 before
+landing in the read-only Archive), how "Remind me tomorrow" / "Pick a
+date…" work for reviewing on your own schedule, what happens if an entry is
+never interacted with (it simply stays in its due section indefinitely —
+no penalty, nothing skipped), and a short explanation of Dashboard vs.
+Notes vs. Archive plus a mention of tags, Stats, Export, and the
+Cmd/Ctrl+K command palette. Wired into `NavBar.tsx` as a "FAQ" text link
+immediately after the "Export ▾" dropdown (left-aligned group, before the
+`ml-auto` theme/account controls), and into `commands.ts`/`CommandPalette.tsx`
+as an "Open FAQ & Guide" action for consistency with how every other NavBar
+entry is mirrored in the palette — `CommandPalette` now renders `FaqModal`
+as an always-mounted sibling (not nested inside its own `if (!open) return
+null` gate) so closing the palette doesn't also unmount the FAQ modal
+before it can show. No backend changes.
+
+---
+
 ### Phase 19 — PWA + due-today notifications
 
 **Goal:** the app is installable and can notify the user when entries are

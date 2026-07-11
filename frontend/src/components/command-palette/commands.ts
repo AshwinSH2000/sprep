@@ -13,9 +13,10 @@ export interface Command {
 interface BuildCommandsArgs {
   navigate: NavigateFunction
   onLogout: () => void
+  onOpenFaq: () => void
 }
 
-export function buildCommands({ navigate, onLogout }: BuildCommandsArgs): Command[] {
+export function buildCommands({ navigate, onLogout, onOpenFaq }: BuildCommandsArgs): Command[] {
   return [
     { id: 'go-home', label: 'Go to SpRep', run: () => navigate('/') },
     { id: 'go-archive', label: 'Go to Archive', run: () => navigate('/archive') },
@@ -28,6 +29,7 @@ export function buildCommands({ navigate, onLogout }: BuildCommandsArgs): Comman
       label: 'Focus new entry input',
       run: () => document.dispatchEvent(new CustomEvent(FOCUS_ENTRY_INPUT_EVENT)),
     },
+    { id: 'open-faq', label: 'Open FAQ & Guide', run: onOpenFaq },
     { id: 'logout', label: 'Log out', run: onLogout },
   ]
 }
