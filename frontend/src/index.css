@@ -1,34 +1,144 @@
 @import "tailwindcss";
 
 /*
- * Dark blue theme tokens — 1:1 port of the custom properties that used to
- * live in journal/static/journal/style.css's :root block. Only use the
- * generated utilities from these tokens (bg-bg-card, text-text-secondary,
- * bg-accent, etc.) — never a raw Tailwind palette class or a hardcoded hex,
- * so the accent hue stays locked to blue.
+ * Teal-and-violet theme tokens (replaces the original flat dark-blue
+ * palette). Only use the generated utilities from these tokens (bg-bg-card,
+ * text-text-secondary, bg-accent, etc.) — never a raw Tailwind palette class
+ * or a hardcoded hex — so the palette stays consistent and swappable from
+ * one place.
  */
 @theme {
-  --color-bg: #0e1b2e;
-  --color-bg-card: #17293f;
-  --color-bg-input: #1c3049;
+  --color-bg: #191726;
+  --color-bg-card: #221f36;
+  --color-bg-input: #2a2642;
 
-  --color-text: #e9eef7;
-  --color-text-secondary: #9db0cc;
-  --color-text-muted: #71859f;
+  --color-text: #f1edfa;
+  --color-text-secondary: #b0a6cf;
+  --color-text-muted: #8177a0;
 
-  --color-border: #2a3c58;
+  --color-border: #362f4d;
 
-  --color-accent: #4f8ff7;
-  --color-accent-hover: #6ea3f9;
+  --color-accent: #0f766e;
+  --color-accent-hover: #14b8a6;
   --color-accent-text: #ffffff;
 
-  --color-btn-secondary-bg: #24374f;
-  --color-btn-secondary-text: #cdd8ea;
-  --color-btn-secondary-hover: #2e4262;
+  --color-btn-secondary-bg: #2a2642;
+  --color-btn-secondary-text: #d3c9ec;
+  --color-btn-secondary-hover: #362f4d;
 
-  --color-error: #ff7a7a;
+  --color-error: #ff6b6b;
+
+  /* Fixed dark chip behind the theme-toggle icon so it reads as white in
+     both themes rather than washing out against a light background. */
+  --color-toggle-bg: #241f3a;
+}
+
+/*
+ * Light variant of the theme tokens above (Phase 18). Toggled via a
+ * data-theme="light" attribute on <html> (see lib/theme.ts) rather than
+ * duplicating Tailwind classes everywhere — the dark values in the @theme
+ * block above stay the default so an unset attribute still renders dark.
+ */
+:root[data-theme='light'] {
+  --color-bg: #f7f3fb;
+  --color-bg-card: #ffffff;
+  --color-bg-input: #f0eaf8;
+
+  --color-text: #241f38;
+  --color-text-secondary: #5c527a;
+  --color-text-muted: #8c81a8;
+
+  --color-border: #e2d9f0;
+
+  --color-accent: #0f766e;
+  --color-accent-hover: #0b5c56;
+  --color-accent-text: #ffffff;
+
+  --color-btn-secondary-bg: #f0eaf8;
+  --color-btn-secondary-text: #3d3459;
+  --color-btn-secondary-hover: #e2d9f0;
+
+  --color-error: #d6453f;
+
+  /* Stays dark even in light mode — see note in the dark block above. */
+  --color-toggle-bg: #241f3a;
 }
 
 body {
   @apply bg-bg text-text;
+}
+
+/*
+ * Minimal element styling for rendered Markdown entry bodies (Phase 13).
+ * We don't pull in @tailwindcss/typography for a handful of tags — these
+ * scoped rules cover bold, italics, lists, links, code, and quotes.
+ */
+.markdown > :first-child {
+  margin-top: 0;
+}
+.markdown > :last-child {
+  margin-bottom: 0;
+}
+.markdown p {
+  margin: 0.5rem 0;
+}
+.markdown ul,
+.markdown ol {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+}
+.markdown ul {
+  list-style: disc;
+}
+.markdown ol {
+  list-style: decimal;
+}
+.markdown li {
+  margin: 0.15rem 0;
+}
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+  margin: 0.75rem 0 0.4rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.markdown h1 {
+  font-size: 1.15rem;
+}
+.markdown h2 {
+  font-size: 1.05rem;
+}
+.markdown h3 {
+  font-size: 1rem;
+}
+.markdown strong {
+  font-weight: 600;
+  color: var(--color-text);
+}
+.markdown em {
+  font-style: italic;
+}
+.markdown code {
+  border-radius: 0.25rem;
+  background: var(--color-bg-input);
+  padding: 0.1rem 0.3rem;
+  font-size: 0.85em;
+}
+.markdown pre {
+  margin: 0.5rem 0;
+  overflow-x: auto;
+  border-radius: 0.375rem;
+  background: var(--color-bg-input);
+  padding: 0.6rem 0.75rem;
+}
+.markdown pre code {
+  background: transparent;
+  padding: 0;
+}
+.markdown blockquote {
+  margin: 0.5rem 0;
+  border-left: 3px solid var(--color-border);
+  padding-left: 0.75rem;
+  color: var(--color-text-muted);
 }
