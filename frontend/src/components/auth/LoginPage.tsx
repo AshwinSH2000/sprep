@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useLogin } from '../../queries/useAuth'
 import { PasswordInput } from '../common/PasswordInput'
 
@@ -57,6 +57,12 @@ export function LoginPage() {
         >
           {loginMutation.isPending ? 'Logging in…' : 'Log in'}
         </button>
+        <p className="mt-4 text-center text-sm text-text-secondary">
+          Don&apos;t have an account?{' '}
+          <Link to="/register" className="text-accent hover:text-accent-hover">
+            Register
+          </Link>
+        </p>
       </form>
     </div>
   )

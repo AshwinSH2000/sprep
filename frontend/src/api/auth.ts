@@ -5,6 +5,17 @@ export async function bootstrapCsrf(): Promise<void> {
   await client.get('/auth/csrf/')
 }
 
+export async function register(payload: {
+  first_name: string
+  last_name: string
+  email: string
+  username: string
+  password: string
+  confirm_password: string
+}): Promise<void> {
+  await client.post('/auth/register/', payload)
+}
+
 export async function login(username: string, password: string) {
   const { data } = await client.post<AuthenticatedUser>('/auth/login/', {
     username,

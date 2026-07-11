@@ -697,6 +697,46 @@ behind masked dots.
 
 ---
 
+### Post-Phase-18 addition — Self-service registration
+
+**Delivered:** a public `RegisterAPIView` (`POST /api/auth/register/`,
+`AllowAny`, added to `api_auth.py` next to the other auth views) accepts
+`first_name`, `last_name`, `email`, `username`, `password`,
+`confirm_password`. Validation, each a `400 {"detail": "..."}` on failure
+matching `ChangePasswordAPIView`'s style: all fields required; password must
+equal `confirm_password`; `email`/`username` must not already exist
+(`__iexact`, so casing doesn't create a duplicate); password must pass
+Django's `password_validation.validate_password()`. On success it calls
+`User.objects.create_user(...)` and returns `201` — it deliberately does
+**not** call `login()`, so a fresh registration never auto-authenticates;
+the user is sent back to `/login` to sign in with their new credentials,
+the same "success modal → go log in" pattern `ChangePasswordPage` already
+uses. No schema changes — still the stock `django.contrib.auth.models.User`.
+
+The "use my email as username" choice is a **frontend-only** concern: the
+backend has no opinion on it and just validates whatever `username`/`email`
+it's given. Uniqueness is checked server-side on submit only, not live/
+as-you-type — no other form in this app does live server validation, and a
+live check wouldn't remove the need for this same submit-time check anyway
+(the two-people-grab-the-same-email-at-once race still exists either way).
+
+Frontend: new `components/auth/RegisterPage.tsx` (`/register`, public route
+alongside `/login`), same card layout as `LoginPage`. First/last name and
+email are plain inputs; a checkbox labeled "Use my email as username"
+(unchecked by default — keeps today's distinct-username behavior as the
+default) toggles whether a separate Username input is shown or the
+submitted username is a copy of the email. Password/confirm reuse
+`PasswordInput` and the same live rule-checklist UX as
+`ChangePasswordPage` — that checklist logic (`getPasswordIssues`) was
+pulled out of `ChangePasswordPage.tsx` into a shared
+`lib/passwordRules.ts` so both pages import the same four checks instead of
+duplicating them. Server errors (duplicate email/username, weak password)
+surface via the existing `Banner` component. `LoginPage` gained a "Don't
+have an account? Register" link. `useRegister()` in `useAuth.ts` is a plain
+mutation with no query-cache writes, matching `useChangePassword`.
+
+---
+
 ### Phase 19 — PWA + due-today notifications
 
 **Goal:** the app is installable and can notify the user when entries are

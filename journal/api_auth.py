@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from django.contrib.auth import authenticate, login, logout, password_validation
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.middleware.csrf import get_token
 
@@ -28,6 +29,44 @@ class CsrfBootstrapAPIView(APIView):
     def get(self, request):
         get_token(request)
         return Response({'detail': 'CSRF cookie set'})
+
+
+class RegisterAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        first_name = request.data.get('first_name', '').strip()
+        last_name = request.data.get('last_name', '').strip()
+        email = request.data.get('email', '').strip()
+        username = request.data.get('username', '').strip()
+        password = request.data.get('password', '')
+        confirm_password = request.data.get('confirm_password', '')
+
+        if not all([first_name, last_name, email, username, password]):
+            return Response({'detail': 'All fields are required'}, status=400)
+
+        if password != confirm_password:
+            return Response({'detail': 'Passwords do not match'}, status=400)
+
+        if User.objects.filter(email__iexact=email).exists():
+            return Response({'detail': 'Email already registered'}, status=400)
+
+        if User.objects.filter(username__iexact=username).exists():
+            return Response({'detail': 'Username already taken'}, status=400)
+
+        try:
+            password_validation.validate_password(password)
+        except ValidationError as exc:
+            return Response({'detail': ' '.join(exc.messages)}, status=400)
+
+        User.objects.create_user(
+            username=username,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            password=password,
+        )
+        return Response({'detail': 'Account created successfully'}, status=201)
 
 
 class LoginAPIView(APIView):

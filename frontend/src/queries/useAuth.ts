@@ -1,9 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { changePassword, fetchMe, login, logout, updateProfile } from '../api/auth'
+import { changePassword, fetchMe, login, logout, register, updateProfile } from '../api/auth'
 import { queryKeys } from './queryKeys'
 
 export function useMe() {
   return useQuery({ queryKey: queryKeys.auth.me, queryFn: fetchMe })
+}
+
+export function useRegister() {
+  return useMutation({ mutationFn: register })
 }
 
 export function useLogin() {

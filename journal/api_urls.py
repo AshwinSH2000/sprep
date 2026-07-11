@@ -20,6 +20,7 @@ urlpatterns = [
     path('entries/<int:pk>/comments/', api_views.EntryAddCommentAPIView.as_view(), name='entry-add-comment'),
 
     path('auth/csrf/', api_auth.CsrfBootstrapAPIView.as_view(), name='auth-csrf'),
+    path('auth/register/', api_auth.RegisterAPIView.as_view(), name='auth-register'),
     path('auth/login/', api_auth.LoginAPIView.as_view(), name='auth-login'),
     path('auth/logout/', api_auth.LogoutAPIView.as_view(), name='auth-logout'),
     path('auth/me/', api_auth.MeAPIView.as_view(), name='auth-me'),
