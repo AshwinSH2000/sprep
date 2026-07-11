@@ -1,5 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { ArchivePage } from './components/archive/ArchivePage'
+import { ChangePasswordPage } from './components/account/ChangePasswordPage'
+import { ProfilePage } from './components/account/ProfilePage'
 import { LoginPage } from './components/auth/LoginPage'
 import { RequireAuth } from './components/auth/RequireAuth'
 import { Dashboard } from './components/dashboard/Dashboard'
@@ -17,6 +19,8 @@ function App() {
           <Route path="/archive" element={<ArchivePage />} />
           <Route path="/notes" element={<NotesPage />} />
           <Route path="/stats" element={<StatsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/change-password" element={<ChangePasswordPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

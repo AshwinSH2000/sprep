@@ -23,4 +23,6 @@ urlpatterns = [
     path('auth/login/', api_auth.LoginAPIView.as_view(), name='auth-login'),
     path('auth/logout/', api_auth.LogoutAPIView.as_view(), name='auth-logout'),
     path('auth/me/', api_auth.MeAPIView.as_view(), name='auth-me'),
+    path('auth/profile/', api_auth.UserProfileAPIView.as_view(), name='auth-profile'),
+    path('auth/change-password/', api_auth.ChangePasswordAPIView.as_view(), name='auth-change-password'),
 ]

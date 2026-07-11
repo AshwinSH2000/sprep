@@ -30,6 +30,8 @@ export function buildCommands({ navigate, onLogout, onOpenFaq }: BuildCommandsAr
       run: () => document.dispatchEvent(new CustomEvent(FOCUS_ENTRY_INPUT_EVENT)),
     },
     { id: 'open-faq', label: 'Open FAQ & Guide', run: onOpenFaq },
+    { id: 'view-profile', label: 'View profile', run: () => navigate('/profile') },
+    { id: 'change-password', label: 'Change password', run: () => navigate('/change-password') },
     { id: 'logout', label: 'Log out', run: onLogout },
   ]
 }

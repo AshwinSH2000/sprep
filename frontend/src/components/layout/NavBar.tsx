@@ -31,6 +31,8 @@ export function NavBar() {
 
   if (!data?.authenticated) return null
 
+  const displayName = [data.first_name, data.last_name].filter(Boolean).join(' ') || data.username
+
   function handleExport(format: 'json' | 'md') {
     setExportOpen(false)
     downloadExport(format)
@@ -39,6 +41,11 @@ export function NavBar() {
   function handleLogout() {
     setAccountOpen(false)
     logoutMutation.mutate(undefined, { onSuccess: () => navigate('/login') })
+  }
+
+  function goToAccountRoute(path: string) {
+    setAccountOpen(false)
+    navigate(path)
   }
 
   return (
@@ -113,10 +120,24 @@ export function NavBar() {
             onClick={() => setAccountOpen((open) => !open)}
             className="text-text-secondary hover:text-text"
           >
-            {data.username} ▾
+            {displayName} ▾
           </button>
           {accountOpen && (
             <div className="absolute right-0 top-full z-10 mt-2 w-52 rounded-md border border-border bg-bg-card py-1 shadow-lg">
+              <button
+                type="button"
+                onClick={() => goToAccountRoute('/profile')}
+                className="block w-full px-3 py-1.5 text-left text-text-secondary hover:bg-btn-secondary-bg hover:text-text"
+              >
+                View profile
+              </button>
+              <button
+                type="button"
+                onClick={() => goToAccountRoute('/change-password')}
+                className="block w-full px-3 py-1.5 text-left text-text-secondary hover:bg-btn-secondary-bg hover:text-text"
+              >
+                Change password
+              </button>
               <button
                 type="button"
                 onClick={handleLogout}

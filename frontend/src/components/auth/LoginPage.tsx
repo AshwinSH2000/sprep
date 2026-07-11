@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLogin } from '../../queries/useAuth'
+import { PasswordInput } from '../common/PasswordInput'
 
 export function LoginPage() {
   const [username, setUsername] = useState('')
@@ -38,14 +39,13 @@ export function LoginPage() {
         <label className="mb-1 block text-sm text-text-secondary" htmlFor="password">
           Password
         </label>
-        <input
+        <PasswordInput
           id="password"
-          type="password"
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="mb-4 w-full rounded-md border border-border bg-bg-input px-3 py-2 text-text outline-none focus:border-accent"
+          wrapperClassName="mb-4"
         />
         {loginMutation.isError && (
           <p className="mb-4 text-sm text-error">Invalid credentials</p>

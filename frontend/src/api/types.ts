@@ -60,6 +60,13 @@ export interface StatsResponse {
   current_streak: number
 }
 
-export type MeResponse =
-  | { authenticated: true; id: number; username: string }
-  | { authenticated: false }
+export interface AuthenticatedUser {
+  authenticated: true
+  id: number
+  username: string
+  first_name: string
+  last_name: string
+  email: string
+}
+
+export type MeResponse = AuthenticatedUser | { authenticated: false }

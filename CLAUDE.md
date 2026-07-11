@@ -656,6 +656,47 @@ before it can show. No backend changes.
 
 ---
 
+### Post-Phase-18 addition — User profile & password management
+
+**Delivered:** `MeAPIView` (`/api/auth/me/`) now also returns `first_name`,
+`last_name`, and `email` alongside the existing `id`/`username` fields, and
+two new endpoints follow the same `api_auth.py` pattern as login/logout:
+`PATCH /api/auth/profile/` (`UserProfileAPIView`) updates first name, last
+name, and email on `request.user`; `POST /api/auth/change-password/`
+(`ChangePasswordAPIView`) verifies the old password with
+`user.check_password()`, validates the new one with Django's
+`password_validation.validate_password()`, calls `set_password()`, and then
+calls `logout(request)` so the session is destroyed — password changes
+always force a fresh login. `LoginAPIView` was updated to return the same
+full user shape so the `me` cache never has stale/missing name fields right
+after login.
+
+Frontend: the `NavBar` account button now shows `first_name last_name`
+(falling back to `username` if both are blank) instead of the raw username,
+and its dropdown gained two entries above "Log out" — **View profile** and
+**Change password** — both also mirrored in the command palette per the
+existing convention. Two new pages live under
+`components/account/`: `ProfilePage.tsx` (`/profile`) shows editable first
+name/last name/email with Back/Update buttons and a dismissible success
+banner; `ChangePasswordPage.tsx` (`/change-password`) has old/new/confirm
+password fields where **Update password** stays disabled until old-password
+is non-empty, new matches confirm, and new satisfies a client-side
+checklist (8+ chars, one uppercase, one lowercase, one digit) shown live
+under the field. A wrong old password surfaces via the new
+`components/common/Banner.tsx` — a themed, dismissible (✕ or 5s
+auto-dismiss) inline banner, never a native `alert()`. On success, a modal
+reads "Password changed successfully — you are required to log in with your
+new password now"; its button clears the React Query cache and navigates to
+`/login` (the backend already killed the session).
+
+Every password `<input>` app-wide (login, and all three change-password
+fields) now uses a shared `components/common/PasswordInput.tsx`, which adds
+a show/hide eye-icon toggle button (`EyeIcon`/`EyeSlashIcon` in
+`layout/icons.tsx`) so users can verify what they typed instead of guessing
+behind masked dots.
+
+---
+
 ### Phase 19 — PWA + due-today notifications
 
 **Goal:** the app is installable and can notify the user when entries are
